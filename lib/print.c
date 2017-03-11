@@ -41,70 +41,97 @@ lp_Print(void (*output)(void *, char *, int),
     } \
   }
     
-    char buf[LP_MAX_BUF];
+    char buf[LP_MAX_BUF];//其他一定会输出的字符缓冲区？
 
-    char c;
-    char *s;
-    long int num;
+    char c;//no
+    char *s;//no
+    long int num;//no
 
-    int longFlag;
-    int negFlag;
-    int width;
-    int prec;
-    int ladjust;
-    char padc;
+    int longFlag;//long int的标志
+    int negFlag;//负数
+	int posFlag;//正数加号是否输出
+	int myFlag; //八进制以及十六进制的输出前缀标识符
+    int width;//宽度
+    int prec;//精度
+    int ladjust;//左对齐(leftadjust)
+    char padc;//与输出对齐有关，参见下方PrintNum函数的注释说明
 
-    int length;
+    int length;//no
 
     for(;;) {
 	{ 
 	    /* scan for the next '%' */
-	    char *fmtStart = fmt;
-		while((*fmt!='\0') && (*fmt!='%')){
-			fmt++;
+		char *fmtTemp = fmt;
+		while(*fmt!='%' && *fmt){
+			fmt++;	
 		}
-		/* flush the string found so far */
-		OUTPUT(arg,fmtStart,fmt-fmtStart);
+	    /* flush the string found so far */
+		OUTPUT(arg,fmtTemp,fmt-fmtTemp);
 	    /* are we hitting the end? */
-		if(*fmt=='\0') break;
+		if(!*fmt)
+			break;
 	}
 
 	/* we found a '%' */
-	fmt++;
+	fmt++; //将fmt定位到%后一个字符处
 	/* check for long */
-	if(*fmt=='1'){
-		longFlag = 1;
-		fmt++;
+	if(*fmt=='l'){
+		longFlag = 1;fmt++;
 	}else{
 		longFlag = 0;
 	}
 	/* check for other prefixes */
+	/*
+	** 需要考虑: '-'--->Left-justify within the given field width; Right justification is the default 
+	** '+'--->Forces to preceed the result with a plus or minus sign (+ or -) even for positive numbers. By default, only		 negative numbers are preceded with a - sign.
+	** (space)-->just output
+	** '#'-->Used with o, x or X specifiers the value is preceeded with 0, 0x or 0X respectively for values different than zero.
+	Used with a, A, e, E, f, F, g or G it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written.
+	**'0'-->Left-pads the number with zeroes (0) instead of spaces when padding is specified (see width sub-specifier).
+	*/
+	//首先，初始化各项变量数据
 	width = 0;
 	prec = -1;
 	ladjust = 0;
 	padc = ' ';
+	posFlag = 0;
+	myFlag = 0;
 	if(*fmt=='-'){
 		ladjust = 1;
 		fmt++;
 	}
-	if(*fmt=='0'){
-		padc = '0';
+	if(*fmt=='+'){
+		posFlag = 1;
 		fmt++;
 	}
-	if(IsDigit(*fmt)){
-		while(IsDigit(*fmt)){
-			width = 10*width + Ctod(*fmt++);
+	if(*fmt==' '){
+		OUTPUT(arg,fmt,1);
+		fmt++;
+	}
+	if(*fmt=='#'){
+		myFlag = 1;
+		fmt++;
+	}
+	if(*fmt=='0'){
+		padc = '0';//表示对齐用'0'填充
+		fmt++;
+	}
+	if(*fmt>='1' && *fmt<='9'){
+		width = *fmt - '0';
+		fmt++;
+		while(*fmt>='0' && *fmt<='9'){
+			width = width*10 + *fmt-'0';
+			fmt++;
 		}
 	}
 	if(*fmt=='.'){
 		fmt++;
-		if(IsDigit(*fmt)){
-			prec = 0;
-			while(IsDigit(*fmt)){
-				prec = prec*10+Ctod(*fmt++);
-			}
+		while(*fmt>='0' && *fmt<='9'){
+			prec = prec*10 + *fmt-'0';
+			fmt++;
 		}
 	}
+	
 	/* check format flag */
 	negFlag = 0;
 	switch (*fmt) {
@@ -129,12 +156,18 @@ lp_Print(void (*output)(void *, char *, int),
 		num = - num;
 		negFlag = 1;
 	    }
+		if(num > 0 && posFlag){
+			OUTPUT(arg,"+",1);
+		}
 	    length = PrintNum(buf, num, 10, negFlag, width, ladjust, padc, 0);
 	    OUTPUT(arg, buf, length);
 	    break;
 
 	 case 'o':
 	 case 'O':
+	 	if(myFlag){
+			OUTPUT(arg,"0",1);
+		}
 	    if (longFlag) { 
 		num = va_arg(ap, long int);
 	    } else { 
@@ -156,6 +189,9 @@ lp_Print(void (*output)(void *, char *, int),
 	    break;
 	    
 	 case 'x':
+	 	if(myFlag){
+			OUTPUT(arg,"0x",2);
+		}
 	    if (longFlag) { 
 		num = va_arg(ap, long int);
 	    } else { 
@@ -166,6 +202,9 @@ lp_Print(void (*output)(void *, char *, int),
 	    break;
 
 	 case 'X':
+	 	if(myFlag){
+			OUTPUT(arg,"0X",2);
+		}
 	    if (longFlag) { 
 		num = va_arg(ap, long int);
 	    } else { 
