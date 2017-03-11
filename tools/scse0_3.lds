@@ -13,7 +13,10 @@ SECTIONS
   fill in the correct address of the key section
   such as text data bss ...
 */
-
-
+	. = 0x80010000;
+	.text : {*(.text)}
+	.data : {*(.data)}
+	.bss : {*(.bss)}
+	. = 0x80400000;
 end = . ;
 }
