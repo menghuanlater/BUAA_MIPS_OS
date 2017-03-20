@@ -7,7 +7,7 @@
 #include "printf.h"
 
 
-LIST_HEAD(Page_list, Page);
+LIST_HEAD(Page_list, Page);//申明Page_list struct type
 typedef LIST_ENTRY(Page) Page_LIST_entry_t;
 
 struct Page {
