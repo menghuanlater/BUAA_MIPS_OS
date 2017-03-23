@@ -191,7 +191,7 @@ page_init(void)
 	LIST_INIT(&page_free_list);//because page_free_list is just a struct,but not point.
 
     /* Step 2: Align `freemem` up to multiple of BY2PG. */
-	freemem = ROUND(freemem,BY2PG);	
+	freemem = ROUND(freemem,BY2PG);//ROUND() in mmu.h	
 
     /* Step 3: Mark all memory block `freemem` as used(set `pp_ref`
      * filed to 1) */
@@ -199,13 +199,13 @@ page_init(void)
 	int loop;
 	int loopLength = PADDR(freemem)/BY2PG;
 	for(loop=0;loop<loopLength;loop++){
-		pages[loop].pp_ref = 1;
-	}
+		pages[loop].pp_ref = 1; 
+	} //because these blocks are for kernel(in low physical address)
 	/* Step 4: Mark the other memory as free. */
-	/*I think it is for others*/
+	/*I think it is for others not in kernel*/
 	for(loop=loopLength;loop<npage;loop++){
 		pages[loop].pp_ref = 0;
-		LIST_INSERT_HEAD(&page_free_list,&pages[loop],pp_link);
+		LIST_INSERT_HEAD(&page_free_list,&pages[loop],pp_link);//insert into free list.
 	}
 	//may be all have done.
 }
@@ -227,18 +227,19 @@ page_init(void)
 int
 page_alloc(struct Page **pp)
 {
+	//this function in lab2 position at page_check()
     struct Page *ppage_temp;
     /* Step 1: Get a page from free memory. If fails, return the error code.*/
 	if((ppage_temp=LIST_FIRST(&page_free_list))!=NULL){
-		*pp = ppage_temp;
-		LIST_REMOVE(ppage_temp,pp_link);
+		*pp = ppage_temp;//get and turn for the *pp
+		LIST_REMOVE(ppage_temp,pp_link);//remove allocted page from free_list.
 		/* Step 2: Initialize this page.* Hint: use `bzero`. */
 		u_long pa_pp = page2pa(ppage_temp);//get the physical address of new alloc page
 		u_long va_pp = KADDR(pa_pp);//get the virtual address of new alloc page because we need use bzero()
 		bzero((void *)va_pp,BY2PG);//init ok!
 		return 0;
 	}	
-	return -E_NO_MEM;
+	return -E_NO_MEM;// -4
 }
 
 /*Overview:
@@ -288,6 +289,8 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
     /* Step 1: Get the corresponding page directory entry and page table. */
 	pgdir_entryp = (Pde *)&(pgdir[PDX(va)]);
 	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));
+	/*by the va,get the pa; reagain,by the pa,get the va of the two-level page table array*/
+	//use PTE_ADDR is because the low-12bit of pa is not all 0,need change.
 
     /* Step 2: If the corresponding page table is not exist(valid) and parameter `create`
      * is set, create one. And set the correct permission bits for this new page

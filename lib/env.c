@@ -96,11 +96,14 @@ env_init(void)
 {
 	int i;
     /*Step 1: Initial env_free_list. */
-
+	LIST_INIT(&env_free_list);
 
     /*Step 2: Travel the elements in 'envs', init every element(mainly initial its status, mark it as free)
      * and inserts them into the env_free_list as reverse order. */
-
+	for(i=NENV-1;i>=0;i--){
+		envs[i].env_status = ENV_FREE;
+		LIST_INSERT_HEAD(&env_free_list,e);
+	}
 
 }
 
