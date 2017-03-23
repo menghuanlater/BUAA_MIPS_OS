@@ -92,7 +92,7 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
     /* Step 1: Get the corresponding page directory entry and page table. */
     /* Hint: Use KADDR and PTE_ADDR to get the page table from page directory
      * entry value. */
-	pgdir_entryp = &pgdir[PDX(va)];//pgdir在mips_vm_init()中分配，对应地址是虚拟地址
+	pgdir_entryp = (Pde *)&pgdir[PDX(va)];//pgdir在mips_vm_init()中分配，对应地址是虚拟地址
 	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));//to virtual address
 
     /* Step 2: If the corresponding page table is not exist and parameter `create`
@@ -122,16 +122,20 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 	Size is a multiple of BY2PG.*/
 void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
 {
-    int i, va_temp;
+	// perm actual is PTE_R 修改位
+    int i;
     Pte *pgtable_entry;
 
     /* Step 1: Check if `size` is a multiple of BY2PG. */
-
-
+	if(size%BY2PG!=0)
+		printf("the size is not multiple of BY2PG\n");
     /* Step 2: Map virtual address space to physical address. */
     /* Hint: Use `boot_pgdir_walk` to get the page table entry of virtual address `va`. */
-
-
+	for(i=0;i<size%BY2PG;i++){
+		pgtable_entry = boot_pgdir_walk(pgdir,va+i*BY2PG,1);
+		*pgtable_entry = (pa + i*BY2PG)|perm|PTE_V;
+	}
+	pgdir[PDX(va)] |= perm|PTE_V;
 }
 
 /* Oierview:
@@ -146,7 +150,7 @@ void mips_vm_init()
     extern struct Env *envs;
 
     Pde *pgdir;
-    u_int n;
+   	u_int n;
 
     /* Step 1: Allocate a page for page directory(first level page table). */
     pgdir = alloc(BY2PG, BY2PG, 1);
@@ -169,7 +173,7 @@ void mips_vm_init()
     envs = (struct Env *)alloc(NENV * sizeof(struct Env), BY2PG, 1);
     n = ROUND(NENV * sizeof(struct Env), BY2PG);
     boot_map_segment(pgdir, UENVS, n, PADDR(envs), PTE_R);
-
+	printf("mips_vm_init:boot_pgdir is %x\n",boot_pgdir);
     printf("pmap.c:\t mips vm init success\n");
 }
 
@@ -229,9 +233,9 @@ page_alloc(struct Page **pp)
 		*pp = ppage_temp;
 		LIST_REMOVE(ppage_temp,pp_link);
 		/* Step 2: Initialize this page.* Hint: use `bzero`. */
-		u_long pa_pp = page2pa(*pp);//get the physical address of new alloc page
+		u_long pa_pp = page2pa(ppage_temp);//get the physical address of new alloc page
 		u_long va_pp = KADDR(pa_pp);//get the virtual address of new alloc page because we need use bzero()
-		bzero(va_pp,BY2PG);//init ok!
+		bzero((void *)va_pp,BY2PG);//init ok!
 		return 0;
 	}	
 	return -E_NO_MEM;
@@ -282,7 +286,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
     struct Page *ppage;//a temp point,help for ppte
 
     /* Step 1: Get the corresponding page directory entry and page table. */
-	pgdir_entryp = &(pgdir[PDX(va)]);
+	pgdir_entryp = (Pde *)&(pgdir[PDX(va)]);
 	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));
 
     /* Step 2: If the corresponding page table is not exist(valid) and parameter `create`
@@ -298,6 +302,9 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 				pgtable = ppage_va;
 				*pgdir_entryp = PADDR(pgtable)|PTE_V;
 				ppage->pp_ref+=1;  //计数器加一
+			}else{
+				*ppte = 0x0;
+				return-E_NO_MEM;
 			}
 		}else{
 			*ppte = 0x0;
