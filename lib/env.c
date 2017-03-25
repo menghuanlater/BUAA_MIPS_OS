@@ -73,7 +73,7 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
      *  to manipulate the specified environment.
      *  If checkperm is set, the specified environment
      *  must be either the current environment.
-     *  or an immediate child of the current environment. */
+     *  or an immediate child of the current environment.ok */
 
     if (checkperm && e != curenv && e->env_parent_id != curenv->env_id){
         *penv = 0;
@@ -102,7 +102,7 @@ env_init(void)
      * and inserts them into the env_free_list as reverse order. */
 	for(i=NENV-1;i>=0;i--){
 		envs[i].env_status = ENV_FREE;
-		LIST_INSERT_HEAD(&env_free_list,e);
+		LIST_INSERT_HEAD(&env_free_list,&envs[i],env_link);
 	}
 
 }
