@@ -27,8 +27,8 @@ LEAF(_start)           /*在asm.h中定义的叶子函数，叶子函数不调�
 	ori	t0, 0x2
 	mtc0	t0, CP0_CONFIG
 	
-/*To do: 
-  set up stack 
+/*To do:
+  set up stack    --->OK 
   you can reference the memory layout in the include/mmu.h
 */
 lui sp,0x8040
