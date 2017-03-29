@@ -185,23 +185,28 @@ env_alloc(struct Env **new, u_int parent_id)
 	struct Env *e;
     
     /*Step 1: Get a new Env from env_free_list*/
-
+	if((e=LIST_FIRST(&env_free_list))==NULL){
+		printf("Sorry,alloc env failed!\n");
+		return -E_NO_MEM;
+	}
     
     /*Step 2: Call certain function(has been implemented) to init kernel memory layout for this new Env.
      *The function mainly maps the kernel address to this new Env address. */
-
+	env_setup_vm(e);
 
     /*Step 3: Initialize every field of new Env with appropriate values*/
-
-
+	e->env_parent_id = parent_id;
+	e->env_status = ENV_RUNNABLE;
+	e->env_id = mkenvid(e);
     /*Step 4: focus on initializing env_tf structure, located at this new Env. 
      * especially the sp register,CPU status. */
     e->env_tf.cp0_status = 0x10001004;
-
+	e->env_tf.regs[29] = USTACKTOP;
 
     /*Step 5: Remove the new Env from Env free list*/
-
-
+	*new = e;
+	LIST_REMOVE(e,env_link);
+	return 0;
 }
 
 /* Overview:
@@ -232,12 +237,33 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
+		if(page_alloc(&p)<0){
+			printf("Sorry,alloc page failed!\n");
+			return -E_NO_MEM;
+		}
+		p->pp_ref++;
+		r = page_insert(env->env_pgdir,p,va+i-offset,PTE_V|PTE_R);
+		if(r<0){
+			printf("Sorry,insert a page is failed!\n");
+			return -E_NO_MEM;
+		}
+		bcopy(bin+i,page2kva(p)+offset,BY2PG);
 	}
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
 	while (i < sgsize) {
-
-
+		if(page_alloc(&p)<0){
+			printf("Sorry,alloc page failed!\n");
+			return -E-NO_MEM;
+		}
+		p->pp_ref++;
+		r = page_insert(env->env_pgdir,p,va+i-offset,PTE_V|PTE_R);
+		if(r<0){
+			printf("Sorry,alloc page failed!\n");
+			return -E_NO_MEM;
+		}
+		bzero(page2kva(p)+offset,BY2PG);
+		i+=BY2PG;
 	}
 	return 0;
 }
@@ -268,15 +294,22 @@ load_icode(struct Env *e, u_char *binary, u_int size)
     u_long perm;
     
     /*Step 1: alloc a page. */
-
+	if(page_alloc(&p)<0){
+		printf("Sorry,alloc page failed!\n");
+		return;
+	}
 
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: The user-stack should be writable? */
-
+	perm = PTE_V|PTE_R;
 
     /*Step 3:load the binary by using elf loader. */
-
-
+    r = load_elf(binary,size,&entry_point,e,load_icode_mapper);
+	if(r<0){
+		printf("Sorry.load entire image failed!\n");
+		return;
+	}
+	
     /***Your Question Here***/
     /*Step 4:Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
@@ -295,11 +328,12 @@ env_create(u_char *binary, int size)
 {
 	struct Env *e;
     /*Step 1: Use env_alloc to alloc a new env. */
-
-
+	if(env_alloc(&e)<0){
+		printf("Sorry,env can't create because alloc env failed!\n");
+		return;
+	}
     /*Step 2: Use load_icode() to load the named elf binary. */
-
-
+	load_icode(e,binary,size);
 }
 
 /* Overview:
@@ -384,13 +418,15 @@ env_run(struct Env *e)
 	/*Step 1: save register state of curenv. */
     /* Hint: if there is a environment running,you should do
     *  context switch.You can imitate env_destroy() 's behaviors.*/
-
-
+	struct Trapframe *old = (struct Trapframe *)(TIMESTACK-sizeof(struct Trapframe));
+	bcopy(old,curenv->env_tf,sizeof(struct Trapframe));
+	curenv->env_tf.pc += 4;//aim to mips 32
+	//curenv->env_tf.pc = curenv->env_tf.cp0_epc;
     /*Step 2: Set 'curenv' to the new environment. */
-
+	curenv = e;
 
     /*Step 3: Use lcontext() to switch to its address space. */
-
+	
 
     /*Step 4: Use env_pop_tf() to restore the environment's
      * environment   registers and drop into user mode in the
