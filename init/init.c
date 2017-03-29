@@ -4,7 +4,10 @@
 #include <printf.h>
 #include <kclock.h>
 #include <trap.h>
-
+extern unsigned char binary_user_A_start[];
+extern unsigned char binary_user_B_start[];
+extern unsigned int binary_user_A_size;
+extern unsigned int binary_user_B_size;
 void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");
@@ -20,9 +23,10 @@ void mips_init()
 	 * code_b.c*/
 	/*you may want to create process by MACRO, please read env.h file, in which you will find it. this MACRO is very
 	 * interesting, have fun please*/
+		
 	ENV_CREATE(user_A);
 	ENV_CREATE(user_B);
-
+	printf("OK,envA and envB create success!\n");
 	trap_init();
 	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
