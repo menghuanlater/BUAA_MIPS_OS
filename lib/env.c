@@ -419,19 +419,19 @@ env_run(struct Env *e)
     /* Hint: if there is a environment running,you should do
     *  context switch.You can imitate env_destroy() 's behaviors.*/
 	struct Trapframe *old = (struct Trapframe *)(TIMESTACK-sizeof(struct Trapframe));
-	bcopy(old,curenv->env_tf,sizeof(struct Trapframe));
+	bcopy(old,&curenv->env_tf,sizeof(struct Trapframe));
 	curenv->env_tf.pc += 4;//aim to mips 32
 	//curenv->env_tf.pc = curenv->env_tf.cp0_epc;
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
 
     /*Step 3: Use lcontext() to switch to its address space. */
-	
+	lcontext(curenv->env_pgdir);	
 
     /*Step 4: Use env_pop_tf() to restore the environment's
      * environment   registers and drop into user mode in the
      * the   environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
-
+	env_pop_tf(&(curnev->env_tf),GET_ENV_ASID(curenv->env_id));
 }
