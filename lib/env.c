@@ -187,7 +187,7 @@ env_alloc(struct Env **new, u_int parent_id)
     /*Step 1: Get a new Env from env_free_list*/
 	if((e=LIST_FIRST(&env_free_list))==NULL){
 		printf("Sorry,alloc env failed!\n");
-		return -E_NO_MEM;
+		return -E_NO_FREE_ENV;
 	}
     
     /*Step 2: Call certain function(has been implemented) to init kernel memory layout for this new Env.
@@ -254,7 +254,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	while (i < sgsize) {
 		if(page_alloc(&p)<0){
 			printf("Sorry,alloc page failed!\n");
-			return -E-NO_MEM;
+			return -E_NO_MEM;
 		}
 		p->pp_ref++;
 		r = page_insert(env->env_pgdir,p,va+i-offset,PTE_V|PTE_R);
@@ -328,7 +328,7 @@ env_create(u_char *binary, int size)
 {
 	struct Env *e;
     /*Step 1: Use env_alloc to alloc a new env. */
-	if(env_alloc(&e)<0){
+	if(env_alloc(&e,0)<0){
 		printf("Sorry,env can't create because alloc env failed!\n");
 		return;
 	}
@@ -433,5 +433,5 @@ env_run(struct Env *e)
      * the   environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
-	env_pop_tf(&(curnev->env_tf),GET_ENV_ASID(curenv->env_id));
+	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
 }

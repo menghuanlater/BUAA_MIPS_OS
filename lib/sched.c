@@ -5,7 +5,7 @@
 /* Overview:
  *  Implement simple round-robin scheduling.
  *  Search through 'envs' for a runnable environment ,
- *  in circular fashion statrting after the previously running env,
+ *  in circular fashion starting after the previously running env,
  *  and switch to the first such environment found.
  *
  * Hints:
@@ -13,5 +13,15 @@
  */
 void sched_yield(void)
 {
-
+	static long position = 0;
+	for(;position<NENV;position++){
+		if(envs[position].env_status == ENV_RUNNABLE){
+			env_run(&envs[position]);
+			if(position==NENV-1)
+				position = 0;
+			else
+				position++;
+			return;
+		}
+	}
 }
