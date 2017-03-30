@@ -12,7 +12,7 @@
  *  The variable which is for counting should be defined as 'static'.
  */
  
-/*void sched_yield(void)
+void sched_yield(void)
 {
 	static long position = 0;
 	for(;position<NENV;position++){
@@ -25,8 +25,8 @@
 			return;
 		}
 	}
-}*/
-void sched_yield(void){
+}
+/*void sched_yield(void){
 	static long i = -1;
 	int n = 0;
 	for(;n<NENV;n++){
@@ -36,4 +36,4 @@ void sched_yield(void){
 		if(envs[i].env_status == ENV_RUNNABLE)
 			env_run(&envs[i]);
 	}
-}
+}*/

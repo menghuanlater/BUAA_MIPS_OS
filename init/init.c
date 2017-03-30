@@ -4,10 +4,7 @@
 #include <printf.h>
 #include <kclock.h>
 #include <trap.h>
-extern unsigned char binary_user_A_start[];
-extern unsigned char binary_user_B_start[];
-extern unsigned int binary_user_A_size;
-extern unsigned int binary_user_B_size;
+
 void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");

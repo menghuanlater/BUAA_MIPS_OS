@@ -564,7 +564,7 @@ void pageout(int va, int context)
 {
     u_long r;
     struct Page *p = NULL;
-
+	printf("va:%ld;context:%ld\n",va,context);
     if (context < 0x80000000) {
         panic("tlb refill and alloc error!");
     }
@@ -572,7 +572,6 @@ void pageout(int va, int context)
     if ((va > 0x7f400000) && (va < 0x7f800000)) {
         panic(">>>>>>>>>>>>>>>>>>>>>>it's env's zone");
     }
-
     if (va < 0x10000) {
         panic("^^^^^^TOO LOW^^^^^^^^^");
     }

@@ -233,7 +233,6 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	u_long i;
 	int r;
 	u_long offset = va - ROUNDDOWN(va, BY2PG);
-
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
@@ -247,10 +246,15 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			printf("Sorry,insert a page is failed!\n");
 			return -E_NO_MEM;
 		}
-		bcopy(bin+i,page2kva(p)+offset,BY2PG);
+		if(i+BY2PG>=bin_size)
+			r = bin_size - i;
+		else
+			r = BY2PG;
+		bcopy(bin+i,page2kva(p)+offset,r);
 	}
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
+	i = bin_size;
 	while (i < sgsize) {
 		if(page_alloc(&p)<0){
 			printf("Sorry,alloc page failed!\n");
@@ -262,7 +266,11 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			printf("Sorry,alloc page failed!\n");
 			return -E_NO_MEM;
 		}
-		bzero(page2kva(p)+offset,BY2PG);
+		if(i+BY2PG>=sgsize)
+			r = sgsize - i;
+		else 
+			r = BY2PG;
+		bzero(page2kva(p)+offset,r);
 		i+=BY2PG;
 	}
 	return 0;
@@ -298,11 +306,11 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 		printf("Sorry,alloc page failed!\n");
 		return;
 	}
-
+	
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: The user-stack should be writable? */
 	perm = PTE_V|PTE_R;
-
+	page_insert(e->env_pgdir,p,USTACKTOP-BY2PG,perm);
     /*Step 3:load the binary by using elf loader. */
     r = load_elf(binary,size,&entry_point,e,load_icode_mapper);
 	if(r<0){
@@ -313,7 +321,6 @@ load_icode(struct Env *e, u_char *binary, u_int size)
     /***Your Question Here***/
     /*Step 4:Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
-	printf("HAHA\n");
 }
 
 /* Overview:
@@ -420,9 +427,11 @@ env_run(struct Env *e)
     /* Hint: if there is a environment running,you should do
     *  context switch.You can imitate env_destroy() 's behaviors.*/
 	struct Trapframe *old = (struct Trapframe *)(TIMESTACK-sizeof(struct Trapframe));
-	bcopy(old,&curenv->env_tf,sizeof(struct Trapframe));
-	curenv->env_tf.pc += 4;//aim to mips 32
-	//curenv->env_tf.pc = curenv->env_tf.cp0_epc;
+	if(curenv){
+		bcopy(old,&curenv->env_tf,sizeof(struct Trapframe));
+		//curenv->env_tf.pc += 4;//aim to mips 32
+		curenv->env_tf.pc = curenv->env_tf.cp0_epc;
+	}
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
 

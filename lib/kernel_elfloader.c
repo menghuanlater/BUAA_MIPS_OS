@@ -70,6 +70,9 @@ int load_elf(u_char *binary, int size, u_long *entry_point, void *user_data,
 		phdr = (Elf32_Phdr *)ptr_ph_table;
 
 		if (phdr->p_type == PT_LOAD) {
+			printf("load_elf va:%x  ",phdr->p_vaddr);
+			printf("load_elf sgsize:%ld  ",phdr->p_memsz);
+			printf("load_elf bin_size:%ld\n  ",phdr->p_filesz);
 			r = map(phdr->p_vaddr, phdr->p_memsz,
 					binary + phdr->p_offset, phdr->p_filesz, user_data);
 
