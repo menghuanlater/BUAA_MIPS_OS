@@ -136,7 +136,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 {
 	//if va is illegal
-	if(va<UTOP){
+	if(va>=UTOP){
 		printf("Sorry,use sys_mem_alloc must promise va < UTOP(%x),but now va:%x\n",UTOP,va);
 		return -E_UNSPECIFIED;
 	}
@@ -150,7 +150,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-	perm = perm|PTE_V|PTE_R; //设置有效位以及脏位
+	perm = perm|PTE_V; //设置有效位
     if(envid2env(envid,&env,perm)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
 		return -E_BAD_ENV;
@@ -160,13 +160,17 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		return -E_NO_MEM;
 	}
 	ppage->pp_ref++;
-	//do we need to judge whether va has been mapped a page?
+	//first we need to judge whether va has mapped a page,if true,carry out page_remove
+	Pte *ppte;
+	if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
+		page_remove(env->env_pgdir,va);
+	}
 	if(page_insert(env->env_pgdir,ppage,va,perm)<0){
 		printf("Sorry,in sys_mem_alloc we can't insert the alloced page to env_pgdir.\n");
 		return -E_NO_MEM;
 	}
 	printf("Ok,you get it in sys_mem_alloc!\n");
-	return 0;//success flag
+	return ret;//success flag
 }
 
 /* Overview:
@@ -196,9 +200,38 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	ret = 0;
 	round_srcva = ROUNDDOWN(srcva, BY2PG);
 	round_dstva = ROUNDDOWN(dstva, BY2PG);
-
+	perm = perm|PTE_V;//set valid bit
     //your code here
-
+	//first judge whether va >=UTP
+	if(srcva>=UTOP || dstva>=UTOP){
+		printf("Sorry,srcva:%x and dstva:%x must <UTOP(%x).\n",srcva,dstva,UTOP);
+		return -E_UNSPECIFIED;
+	}
+	//second we should check the perm legacy
+	if(perm & PTE_COW & PTE_R !=0){
+		printf("Sorry,in sys_mem_map perm is illegal.\n");
+		return -E_INVAL;
+	}
+	//third we judge whether srcenv exist.
+	if(envid2env(srcid,&srcenv,perm)<0){
+		printf("Sorry,we can't get srcenv!\n");
+		return -E_BAD_ENV;
+	}
+	//forth we judge whether dstenv exist.
+	if(envid2env(dstid,&dstenv,perm)<0){
+		printf("Sorry,we can't get dstenv!\n");
+		return -E_BAD_ENV;
+	}
+	//five we judge whether page is exist in srcenv.
+	if((ppage=page_lookup(srcenv->env_pgdir,round_srcva,&ppte))==NULL){
+		printf("Sorry,we found srcenv not exist page at %x.\n",round_srcva);
+		return -E_UNSPECIFIED;
+	}
+	//six we judge whether page_insert is successful.
+	if(page_insert(dstenv->env_pgdir,ppage,round_dstva,perm)<0){
+		printf("Sorry,in sys_mem_map can't insert src page to dst page.\n");
+		return -E_NO_MEM;
+	}
 	return ret;
 }
 
