@@ -135,12 +135,38 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
  */
 int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 {
+	//if va is illegal
+	if(va<UTOP){
+		printf("Sorry,use sys_mem_alloc must promise va < UTOP(%x),but now va:%x\n",UTOP,va);
+		return -E_UNSPECIFIED;
+	}
+	//if perm is illegal
+	if(perm & PTE_COW == PTE_COW){
+		printf("Sorry,use sys_mem_alloc must promise perm not contain PTE_COW.\n");
+		return -E_INVAL;
+	}
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-
+	perm = perm|PTE_V|PTE_R; //设置有效位以及脏位
+    if(envid2env(envid,&env,perm)<0){
+		printf("Sorry,you can't get the env by the given env_id.\n");
+		return -E_BAD_ENV;
+	}
+	if(page_alloc(&ppage)<0){
+		printf("Sorry,use sys_mem_alloc can't get a free page memory.\n");
+		return -E_NO_MEM;
+	}
+	ppage->pp_ref++;
+	//do we need to judge whether va has been mapped a page?
+	if(page_insert(env->env_pgdir,ppage,va,perm)<0){
+		printf("Sorry,in sys_mem_alloc we can't insert the alloced page to env_pgdir.\n");
+		return -E_NO_MEM;
+	}
+	printf("Ok,you get it in sys_mem_alloc!\n");
+	return 0;//success flag
 }
 
 /* Overview:

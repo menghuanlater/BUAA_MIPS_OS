@@ -354,7 +354,6 @@ page_insert(Pde *pgdir, struct Page *pp, u_long va, u_int perm)
 
     /* Step 2: Update TLB. */
     tlb_invalidate(pgdir, va);
-
     /* Step 3: Do check, re-get page table entry to validate the insertion. */
     if (pgdir_walk(pgdir, va, 1, &pgtable_entry) != 0) {
         return -E_NO_MEM;    // panic ("page insert failed .\n");
