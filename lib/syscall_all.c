@@ -63,6 +63,11 @@ u_int sys_getenvid(void)
  */
 void sys_yield(void)
 {
+	//we need use sched_yield() and recorve process trapfram
+	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
+	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
+	bcopy(sys,dst,sizeof(struct Trapframe));
+	sched_yield();//执行时间片轮转调度
 }
 
 /* Overview:
@@ -249,7 +254,15 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 	// Your code here.
 	int ret;
 	struct Env *env;
-
+	if(va>=UTOP){
+		printf("Sorry,in sys_mem_unmap va:%x >=UTOP %x.\n",va,UTOP);
+		return -E_INVAL;
+	}
+	if(envid2env(envid,&env,PTE_V)<0){
+		printf("Sorry,in sys_mem_unmap we can't get env.\n");
+		return -E_INVAL;
+	}
+	page_remove(env->env_pgdir,va);
 	return ret;
 	//	panic("sys_mem_unmap not implemented");
 }
