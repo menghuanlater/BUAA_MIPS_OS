@@ -353,6 +353,7 @@ void sys_panic(int sysno, char *msg)
  *
  * Pre-Condition:
  * 	`dstva` is valid (Note: NULL is also a valid value for `dstva`).
+ *  dstva < UTOP
  * 
  * Post-Condition:
  * 	This syscall will set the current process's status to 
@@ -360,6 +361,16 @@ void sys_panic(int sysno, char *msg)
  */
 void sys_ipc_recv(int sysno, u_int dstva)
 {
+	if(dstva>=UTOP){
+		printf("Sorry,in sys_ipc_recv the dstva %x need < UTOP %x\n"dstva,UTOP);
+		return -E_INVAL;
+	}
+	curenv->env_ipc_recving = 1;
+	curenv->env_ipc_dstva = dstva;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+	//do we need to use KERNEL_SP and TIMESTACk?
+	/*I think this situation we need not to frame copy,because we may not use KERNEL_SP!*/
+	sched_yield();
 }
 
 /* Overview:
