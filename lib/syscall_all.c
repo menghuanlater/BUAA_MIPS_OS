@@ -394,10 +394,27 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 					 u_int perm)
 {
 
-	int r;
-	struct Env *e;
-	struct Page *p;
-
+	//int r;
+	//struct Env *e;
+	//struct Page *p;
+	perm = perm|PTE_V;
+	if(srcva>=UTOP){
+		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
+		return -E_INVAL;
+	}
+	if(envid2env(envid,&e,perm)){
+		printf("Sorry,in sys_ipc_can_send the envid can't found the env.\n");
+		return -E_INVAL;
+	}
+	if(e->env_ipc_recving==0){
+		printf("Sorry,in sys_ipc_can_send we found env_ipc_recving is 0.\n");
+		return -E_IPC_NOT_RECV;
+	}
+	/*if judge success*/
+	e->env_ipc_recving = 0;
+	e->env_status = ENV_RUNNABLE;
+	e->env_ipc_value = value;
+	e->env_ipc_from = curenv->env_id;
 	return 0;
 }
 
