@@ -66,7 +66,7 @@ void sys_yield(void)
 	//we need use sched_yield() and recorve process trapfram
 	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
 	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
-	bcopy(sys,dst,sizeof(struct Trapframe));
+	bcopy(src,dst,sizeof(struct Trapframe));
 	sched_yield();//执行时间片轮转调度
 }
 
@@ -362,8 +362,8 @@ void sys_panic(int sysno, char *msg)
 void sys_ipc_recv(int sysno, u_int dstva)
 {
 	if(dstva>=UTOP){
-		printf("Sorry,in sys_ipc_recv the dstva %x need < UTOP %x\n"dstva,UTOP);
-		return -E_INVAL;
+		printf("Sorry,in sys_ipc_recv the dstva %x need < UTOP %x\n",dstva,UTOP);
+		return;
 	}
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
