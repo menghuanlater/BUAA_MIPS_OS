@@ -395,7 +395,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 {
 
 	//int r;
-	//struct Env *e;
+	struct Env *e;
 	//struct Page *p;
 	perm = perm|PTE_V;
 	if(srcva>=UTOP){
