@@ -115,8 +115,12 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 	// Your code here.
 	struct Env *env;
 	int ret;
-
-
+	if(envid2env(&env)<0){
+		printf("Sorry,in sys_set_pgfault_handler we can't get env by envid.\n");
+		return -E_INVAL;
+	}
+	env->env_pgfault_handler = func;
+	env->env_xstacktop = xstacktop;
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
 }
@@ -282,10 +286,20 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 int sys_env_alloc(void)
 {
 	// Your code here.
-	int r;
 	struct Env *e;
-
-
+	if(env_alloc(&e,curenv->env_id)<0){
+		printf("Sorry,because unable allocate a env,fork failed.\n");
+		return -E_NO_FREE_ENV;
+	}
+	e->env_status = ENV_NOT_RUNNABLE;
+	//careful,now we in kernel status,so we must care that CPU is ->KERNEL_SP
+	bcopy(KERNEL_SP-sizeof(struct Trapframe),&e->env_tf,sizeof(struct Trapframe));
+	//now curenv is in kernel status,represent curenv is in exception handle.
+	e->env_tf.pc = curenv->env_tf.cp0_epc;//need return curenv
+	//epc设置了父进程调用返回时，执行的PC位置.env_tf只在保存当前进程上下文才用到(进程不在主控CPU中
+	//,进程陷入内核态仍算作主控CPU).
+	//to set $v0 to 0 as return value for son env
+	e->env_tf.regs[2] = 0;
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }
