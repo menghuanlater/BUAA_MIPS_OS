@@ -155,7 +155,7 @@ fork(void)
 	// Your code here.
 	u_int newenvid;
 	extern struct Env *envs;
-	extern struct Env *env;
+	extern struct Env *env;//将其指向当前的进程，如果子进程无法创建，则指向父进程
 	u_int i;
 
 	//The parent installs pgfault using set_pgfault_handler
@@ -163,9 +163,13 @@ fork(void)
 	//alloc a new env
 	if((newenvid = syscall_env_alloc())<0){
 		panic("Sorry,in fork we found newenv not alloc.\n");
+		env = &ens[ENVX(syscall_getenvid())]
 		return 0;
 	}
-	/*use vpt vpd*/
+	
+	env = &envs[ENVX(newenvid)];
+	
+	/*use vpt vpd，我们只需要将父进程中相关的用户空间的页复制到子进程用户空间即可*/
 	
 
 	//搭建异常处理栈，分配一个页，让别的进程不抢占此页
