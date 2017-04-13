@@ -4,7 +4,8 @@
 #include <mmu.h>
 #include <env.h>
 
-
+//because now we are in user status,so we need use user/syscall_lib.c but not lib/syscall_all.c
+//be careful.
 /* ----------------- help functions ---------------- */
 
 /* Overview:
@@ -84,15 +85,11 @@ pgfault(u_int va)
 	//first we must make sure that va is align to BY2PG
 	int align_va = ROUNDDOWN(va,BY2PG);
 	//	writef("fork.c:pgfault():\t va:%x\n",va);
-	int curenv_id = sys_getenvid();
+	int curenv_id = syscall_getenvid();
    	if(PADDR(va) & PTE_COW !=0){
-		if(sys_mem_alloc(0,curenv_id,UXSTACKTOP-BY2PG,PTE_V|PTE_R)<0){//sysno give a random value
-			panic("sys_mem_alloc in pgfault failed.\n");
-		}
-		tmp = KADDR(page2pa(page));
-		user_bcopy((void *)va,(void *)(UXSTACKTOP-BY2PG),BY2PG);
-		syscall_mem_map(0,curenv_id,UXSTACKTOP-BY2PG,curenv_id,va,PTE_V|PTE_R);
-		syscall_mem_unmap(0,curenv_id,USTACKTOP-BY2PG);
+		user_bcopy((void *)va,(void *)UXSTACKTOP-BY2PG,BY2PG);
+		syscall_mem_map(curenv_id,UXSTACKTOP-BY2PG,curenv_id,va,PTE_V|PTE_R);
+		syscall_mem_unmap(curenv_id,UXSTACKTOP-BY2PG);
 	}else{
 		user_panic("va page is not PTE_COW.\n");
 	}	
@@ -161,12 +158,28 @@ fork(void)
 	extern struct Env *env;
 	u_int i;
 
-	
 	//The parent installs pgfault using set_pgfault_handler
+	set_pgfault_handler(pgfault);	
+	//alloc a new env
+	if((newenvid = syscall_env_alloc())<0){
+		panic("Sorry,in fork we found newenv not alloc.\n");
+		return 0;
+	}
+	/*use vpt vpd*/
 	
-	//alloc a new alloc
-		
 
+	//搭建异常处理栈，分配一个页，让别的进程不抢占此页
+	if(syscall_mem_alloc(newenvid,UXSTACKTOP-BY2PG,PTE_V|PTE_R)<0){
+		panic("failed alloc UXSTACK.\n");
+		return 0;
+	}
+	//帮助子进程注册错误处理函数
+	if(syscall_set_pgfault_handler(0,newenvid,__asm_pgfault_handler,UXSTACKTOP)<0){
+		panic("page fault handler setup failed.\n");
+		return 0;
+	}
+	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
+	syscall_set_env_status(newenvid,ENV_RUNNABLE);
 	return newenvid;
 }
 

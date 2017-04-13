@@ -321,7 +321,15 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	// Your code here.
 	struct Env *env;
 	int ret;
-
+	if(status!= ENV_RUNNABLE && status!=ENV_NOT_RUNNABLE && status!=ENV_FREE){
+		printf("Sorry,argument status in sys_set_env_status is not legal.\n");
+		return -E_INVAL;
+	}
+	if(envid2env(&env,envid,PTE_V)<0){
+		printf("In sys_set_env_status we can't get the env.\n");
+		return -E_INVAL;
+	}
+	env->env_status = status;
 	return 0;
 	//	panic("sys_env_set_status not implemented");
 }
@@ -340,7 +348,6 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {
-
 	return 0;
 }
 
