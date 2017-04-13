@@ -163,7 +163,7 @@ fork(void)
 	//alloc a new env
 	if((newenvid = syscall_env_alloc())<0){
 		panic("Sorry,in fork we found newenv not alloc.\n");
-		env = &ens[ENVX(syscall_getenvid())]
+		env = &envs[ENVX(syscall_getenvid())];
 		return 0;
 	}
 	
@@ -178,7 +178,7 @@ fork(void)
 		return 0;
 	}
 	//帮助子进程注册错误处理函数
-	if(syscall_set_pgfault_handler(0,newenvid,__asm_pgfault_handler,UXSTACKTOP)<0){
+	if(syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler,UXSTACKTOP)<0){
 		panic("page fault handler setup failed.\n");
 		return 0;
 	}

@@ -115,7 +115,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 	// Your code here.
 	struct Env *env;
 	int ret;
-	if(envid2env(&env)<0){
+	if(envid2env(&env,envid,PTE_V)<0){
 		printf("Sorry,in sys_set_pgfault_handler we can't get env by envid.\n");
 		return -E_INVAL;
 	}
