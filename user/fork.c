@@ -81,17 +81,21 @@ void user_bzero(void *v, u_int n)
 static void
 pgfault(u_int va)
 {
-	u_int *tmp;
+	//first we must make sure that va is align to BY2PG
+	int align_va = ROUNDDOWN(va,BY2PG);
 	//	writef("fork.c:pgfault():\t va:%x\n",va);
-    
-    //map the new page at a temporary place
-
-	//copy the content
-	
-    //map the page on the appropriate place
-	
-    //unmap the temporary place
-	
+	int curenv_id = sys_getenvid();
+   	if(PADDR(va) & PTE_COW !=0){
+		if(sys_mem_alloc(0,curenv_id,UXSTACKTOP-BY2PG,PTE_V|PTE_R)<0){//sysno give a random value
+			panic("sys_mem_alloc in pgfault failed.\n");
+		}
+		tmp = KADDR(page2pa(page));
+		user_bcopy((void *)va,(void *)(UXSTACKTOP-BY2PG),BY2PG);
+		syscall_mem_map(0,curenv_id,UXSTACKTOP-BY2PG,curenv_id,va,PTE_V|PTE_R);
+		syscall_mem_unmap(0,curenv_id,USTACKTOP-BY2PG);
+	}else{
+		user_panic("va page is not PTE_COW.\n");
+	}	
 }
 
 /* Overview:
@@ -157,11 +161,11 @@ fork(void)
 	extern struct Env *env;
 	u_int i;
 
-
+	
 	//The parent installs pgfault using set_pgfault_handler
-
+	
 	//alloc a new alloc
-
+		
 
 	return newenvid;
 }

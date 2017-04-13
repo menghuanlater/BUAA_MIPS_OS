@@ -307,7 +307,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 				ppage->pp_ref+=1;  //计数器加一
 			}else{
 				*ppte = 0x0;
-				return-E_NO_MEM;
+				return -E_NO_MEM;
 			}
 		}else{
 			*ppte = 0x0;
