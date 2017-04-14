@@ -136,7 +136,19 @@ duppage(u_int envid, u_int pn)
 	u_int addr;
 	u_int perm;
 
-	//	user_panic("duppage not implemented");
+	perm = (*vpt)[pn] & 0x00000fff; //取出标记位
+	if(perm & PTE_R !=0 || perm & PTE_COW){
+		if(perm & PTE_LIBRARY){
+			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
+		}else{
+			perm = PTE_V | PTE_R;
+		}
+	}
+	if(syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm)<0){
+		user_panic("failed page map in duppage.\n");
+	}
+
+	//user_panic("duppage not implemented");
 }
 
 /* Overview:
@@ -162,7 +174,7 @@ fork(void)
 	set_pgfault_handler(pgfault);	
 	//alloc a new env
 	if((newenvid = syscall_env_alloc())<0){
-		panic("Sorry,in fork we found newenv not alloc.\n");
+		user_panic("Sorry,in fork we found newenv not alloc.\n");
 		env = &envs[ENVX(syscall_getenvid())];
 		return 0;
 	}
@@ -170,16 +182,24 @@ fork(void)
 	env = &envs[ENVX(newenvid)];
 	
 	/*use vpt vpd，我们只需要将父进程中相关的用户空间的页复制到子进程用户空间即可*/
-	
+	/*注意创建一个进程的时候会调用env_vm_init函数，这个函数有个非常关键的操作,我们创建
+	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
+	boot_pgdir作为模板复制的，不需要再次复制拷贝*/
+	/*we need judge whether the pgtable is exist or the page is exist.*/
+	for(i=0;i<UTOP,i+=BY2PG){
+		if((*vpd)[VPN[i]/1024]!=0 && (*vpt)[VPN[i]]!=0){
+			duppage(newenvid,VPN[i]);
+		}
+	}
 
 	//搭建异常处理栈，分配一个页，让别的进程不抢占此页
 	if(syscall_mem_alloc(newenvid,UXSTACKTOP-BY2PG,PTE_V|PTE_R)<0){
-		panic("failed alloc UXSTACK.\n");
+		user_panic("failed alloc UXSTACK.\n");
 		return 0;
 	}
 	//帮助子进程注册错误处理函数
 	if(syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler,UXSTACKTOP)<0){
-		panic("page fault handler setup failed.\n");
+		user_panic("page fault handler setup failed.\n");
 		return 0;
 	}
 	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
