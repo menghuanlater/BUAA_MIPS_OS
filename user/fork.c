@@ -86,9 +86,9 @@ pgfault(u_int va)
 	int align_va = ROUNDDOWN(va,BY2PG);
 	//	writef("fork.c:pgfault():\t va:%x\n",va);
 	int curenv_id = syscall_getenvid();
-   	if(PADDR(va) & PTE_COW !=0){
-		user_bcopy((void *)va,(void *)UXSTACKTOP-BY2PG,BY2PG);
-		syscall_mem_map(curenv_id,UXSTACKTOP-BY2PG,curenv_id,va,PTE_V|PTE_R);
+   	if(PADDR(align_va) & PTE_COW !=0){
+		user_bcopy((void *)align_va,(void *)UXSTACKTOP-BY2PG,BY2PG);
+		syscall_mem_map(curenv_id,UXSTACKTOP-BY2PG,curenv_id,align_va,PTE_V|PTE_R);
 		syscall_mem_unmap(curenv_id,UXSTACKTOP-BY2PG);
 	}else{
 		user_panic("va page is not PTE_COW.\n");
@@ -133,7 +133,6 @@ duppage(u_int envid, u_int pn)
 	 * bug, we would like to say "Good luck. God bless."
 	 */
 	// writef("");
-	u_int addr;
 	u_int perm;
 
 	perm = (*vpt)[pn] & 0x00000fff; //取出标记位
@@ -186,9 +185,9 @@ fork(void)
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
 	boot_pgdir作为模板复制的，不需要再次复制拷贝*/
 	/*we need judge whether the pgtable is exist or the page is exist.*/
-	for(i=0;i<UTOP,i+=BY2PG){
-		if((*vpd)[VPN[i]/1024]!=0 && (*vpt)[VPN[i]]!=0){
-			duppage(newenvid,VPN[i]);
+	for(i=0;i<UTOP;i+=BY2PG){
+		if((*vpd)[VPN(i)/1024]!=0 && (*vpt)[VPN(i)]!=0){
+			duppage(newenvid,VPN(i));
 		}
 	}
 

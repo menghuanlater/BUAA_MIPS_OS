@@ -48,3 +48,16 @@ _user_panic(const char *file, int line, const char *fmt, ...)
 
 	for (;;);
 }
+void 
+_panic(const char *file, int line,const char *fmt,...)
+{
+	va_list ap;
+
+	va_start(ap,fmt);
+	writef("panic at %s:%d: ",file,line);
+	user_lp_Print(user_myoutput,0,(char *)fmt,ap);
+	writef("\n");
+	va_end(ap);
+
+	for(;;);
+}
