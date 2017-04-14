@@ -185,7 +185,7 @@ fork(void)
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
 	boot_pgdir作为模板复制的，不需要再次复制拷贝*/
 	/*we need judge whether the pgtable is exist or the page is exist.*/
-	for(i=0;i<UTOP;i+=BY2PG){
+	for(i=0;i<UXSTACKTOP-BY2PG;i+=BY2PG){
 		if((*vpd)[VPN(i)/1024]!=0 && (*vpt)[VPN(i)]!=0){
 			duppage(newenvid,VPN(i));
 		}

@@ -228,6 +228,7 @@ env_alloc(struct Env **new, u_int parent_id)
 static int load_icode_mapper(u_long va, u_int32_t sgsize,
 							 u_char *bin, u_int32_t bin_size, void *user_data)
 {
+	printf("in load_icode_mapper,va:%x  sgsize:%x  bin_size:%x\n",va,sgsize,bin_size);
 	struct Env *env = (struct Env *)user_data;
 	struct Page *p = NULL;
 	u_long i;
