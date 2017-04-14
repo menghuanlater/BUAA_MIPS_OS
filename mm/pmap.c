@@ -563,7 +563,7 @@ void pageout(int va, int context)
 {
     u_long r;
     struct Page *p = NULL;
-	printf("va:%ld;context:%ld\n",va,context);
+	printf("va:%x;context:%x\n",va,context);
     if (context < 0x80000000) {
         panic("tlb refill and alloc error!");
     }

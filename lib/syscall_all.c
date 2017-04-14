@@ -179,6 +179,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		return -E_NO_MEM;
 	}
 	printf("Ok,you get it in sys_mem_alloc!\n");
+	printf("in sys_mem_alloc: va:%x.\n",va);
 	return ret;//success flag
 }
 
@@ -300,6 +301,7 @@ int sys_env_alloc(void)
 	//,进程陷入内核态仍算作主控CPU).
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
+	e->env_pgfault_handler = curenv->env_pgfault_handler;
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }
