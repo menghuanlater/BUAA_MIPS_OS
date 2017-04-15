@@ -149,15 +149,13 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		return -E_UNSPECIFIED;
 	}
 	//if perm is illegal
-	if(perm & PTE_COW !=0){
+	/*if((perm & PTE_COW) !=0){
 		printf("Sorry,use sys_mem_alloc must promise perm not contain PTE_COW.\n");
 		return -E_INVAL;
-	}
+	}*/
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
-	int ret;
-	ret = 0;
 	perm = perm|PTE_V|PTE_R; //设置有效位
     if(envid2env(envid,&env,perm)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
@@ -170,14 +168,14 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	ppage->pp_ref++;
 	//first we need to judge whether va has mapped a page,if true,carry out page_remove
 	Pte *ppte;
-	if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
+	/*if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
 		page_remove(env->env_pgdir,va);
-	}
+	}*/
 	if(page_insert(env->env_pgdir,ppage,va,perm)<0){
 		printf("Sorry,in sys_mem_alloc we can't insert the alloced page to env_pgdir.\n");
 		return -E_NO_MEM;
 	}
-	return ret;//success flag
+	return 0;//success flag
 }
 
 /* Overview:
@@ -215,10 +213,11 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 		return -E_UNSPECIFIED;
 	}
 	//second we should check the perm legacy
-	if((perm & PTE_COW) !=0){
+	/*if((perm & PTE_COW) !=0){
+		printf("哈哈.%x  cdscds",perm);
 		printf("Sorry,in sys_mem_map perm is illegal.\n");
 		return -E_INVAL;
-	}
+	}*/
 	//third we judge whether srcenv exist.
 	if(envid2env(srcid,&srcenv,perm)<0){
 		printf("Sorry,we can't get srcenv!\n");
@@ -230,7 +229,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 		return -E_BAD_ENV;
 	}
 	//five we judge whether page is exist in srcenv.
-	if((ppage=page_lookup(srcenv->env_pgdir,round_srcva,&ppte))==NULL){
+	if((ppage=page_lookup(srcenv->env_pgdir,round_srcva,&ppte))==0){
 		printf("Sorry,we found srcenv not exist page at %x.\n",round_srcva);
 		return -E_UNSPECIFIED;
 	}
@@ -291,7 +290,7 @@ int sys_env_alloc(void)
 		return -E_NO_FREE_ENV;
 	}
 	e->env_status = ENV_NOT_RUNNABLE;
-	bcopy(&(curenv->env_tf),&(e->env_tf),sizeof(struct Trapframe));
+	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
 	Pte *ppte;
 	u_int i;
 	for(i=UTEXT;i<UTOP-2*BY2PG;i+=BY2PG){
@@ -299,7 +298,7 @@ int sys_env_alloc(void)
 		pgdir_walk(curenv->env_pgdir,i,0,&ppte);
 		if(ppte!=0){
 			if((*ppte & PTE_V)!=0){
-				if(*ppte & PTE_R !=0){
+				if((*ppte & PTE_R) !=0){
 					page_insert(curenv->env_pgdir,pa2page(PTE_ADDR(*ppte)),i,PTE_V|PTE_R|PTE_COW);
 					page_insert(e->env_pgdir,pa2page(PTE_ADDR(*ppte)),i,PTE_V|PTE_R|PTE_COW);
 				}else{
@@ -312,7 +311,7 @@ int sys_env_alloc(void)
 	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
-	//e->env_pgfault_handler = curenv->env_pgfault_handler;
+	e->env_pgfault_handler = curenv->env_pgfault_handler;
 	//e->env_xstacktop = curenv->env_xstacktop;
 	//e->env_pgfault_handler = 0;
 	return e->env_id;

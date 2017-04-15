@@ -83,8 +83,8 @@ static void
 pgfault(u_int va)
 {
 	//first we must make sure that va is align to BY2PG
-	int align_va = ROUNDDOWN(va,BY2PG);
-	int id = syscall_getenvid();
+	u_int align_va = ROUNDDOWN(va,BY2PG);
+	u_int id = syscall_getenvid();
 	//writef("fork.c:pgfault():\t va:%x\n",va);
    	if((*vpt)[VPN(align_va)] & PTE_COW !=0){
 		syscall_mem_alloc(id,UXSTACKTOP-2*BY2PG,BY2PG);
@@ -135,8 +135,8 @@ duppage(u_int envid, u_int pn)
 	 */
 	// writef("");
 	u_int perm;
-	perm = (*vpt)[pn] & 0x00000fff; //取出标记位
-	if((perm & PTE_R !=0) || (perm & PTE_COW!=0)){
+	perm = (*vpt)[pn] & 0xfff; //取出标记位
+	if(((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)){
 		/*if(perm & PTE_LIBRARY){
 			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
 		}else{

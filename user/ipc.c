@@ -21,7 +21,6 @@ ipc_send(u_int whom, u_int val, u_int srcva, u_int perm)
 	if (r == 0) {
 		return;
 	}
-
 	user_panic("error in ipc_send: %d", r);
 }
 
