@@ -64,9 +64,7 @@ u_int sys_getenvid(void)
 void sys_yield(void)
 {
 	//we need use sched_yield() and recorve process trapfram
-	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
-	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
-	bcopy(src,dst,sizeof(struct Trapframe));
+	bcopy(KERNEL_SP - sizeof(struct Trapframe),TIMESTACK - sizeof(struct Trapframe),sizeof(struct Trapframe));
 	sched_yield();//执行时间片轮转调度
 }
 
@@ -119,7 +117,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 		return -E_INVAL;
 	}
 	env->env_pgfault_handler = func;
-	env->env_xstacktop = xstacktop;
+	env->env_xstacktop = TRUP(xstacktop);
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
 }
@@ -308,8 +306,8 @@ int sys_env_alloc(void)
 			}
 		}
 	}
-
-	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
+	e->env_tf.pc = e->env_tf.cp0_epc;
+	printf("child epc:%x   curenv epc:%x\n",e->env_tf.cp0_epc,curenv->env_tf.cp0_epc);
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
 	//e->env_pgfault_handler = curenv->env_pgfault_handler;
@@ -433,10 +431,10 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	struct Env *e;
 	//struct Page *p;
 	perm = perm|PTE_V;
-	if(srcva==0){
+	/*if(srcva==0){
 		printf("in sys_ipc_can_send found va is 0\n");
-		return -E_IPC_NOT_RECV;
-	}
+		return -E_INVAL;
+	}*/
 	if(srcva>=UTOP){
 		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
 		return -E_INVAL;

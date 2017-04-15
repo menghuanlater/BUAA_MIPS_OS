@@ -7,7 +7,6 @@ void
 umain(void)
 {
 	u_int who, i;
-
 	if ((who = fork()) != 0) {
 		// get the ball rolling
 		writef("\n@@@@@send 0 from %x to %x\n", syscall_getenvid(), who);

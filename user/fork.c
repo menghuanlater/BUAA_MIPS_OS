@@ -142,7 +142,9 @@ duppage(u_int envid, u_int pn)
 		}else{
 			perm = PTE_V | PTE_R;
 		}*/
-		perm = perm | PTE_V | PTE_R | PTE_COW;
+		perm = perm | PTE_V | PTE_R;
+		syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm);
+		return;
 	}
 	if(syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm)<0){
 		user_panic("failed page map in duppage.\n");
