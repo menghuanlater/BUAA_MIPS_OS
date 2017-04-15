@@ -338,7 +338,6 @@ page_insert(Pde *pgdir, struct Page *pp, u_long va, u_int perm)
     u_int PERM;
     Pte *pgtable_entry;
     PERM = perm | PTE_V;
-
     /* Step 1: Get corresponding page table entry. */
     pgdir_walk(pgdir, va, 0, &pgtable_entry);
 
@@ -375,7 +374,6 @@ page_lookup(Pde *pgdir, u_long va, Pte **ppte)
 {
     struct Page *ppage;
     Pte *pte;
-
     /* Step 1: Get the page table entry. */
     pgdir_walk(pgdir, va, 0, &pte);
 
@@ -563,7 +561,7 @@ void pageout(int va, int context)
 {
     u_long r;
     struct Page *p = NULL;
-	printf("va:%x;context:%x\n",va,context);
+	printf("*********va:%x;context:%x*************\n",va,context);
     if (context < 0x80000000) {
         panic("tlb refill and alloc error!");
     }

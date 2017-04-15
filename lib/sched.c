@@ -27,3 +27,16 @@ void sched_yield(void)
 		}
 	}
 }
+/*void sched_yield(void){
+	static int i = -1;
+	int n=0;
+	for(;n<NENV-1;n++){
+		i++;
+		if(i==NENV)
+			i=0;
+		if(envs[i].env_status == ENV_RUNNABLE)
+			env_run(&envs[i]);
+	}
+}*/
+
+

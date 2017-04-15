@@ -114,8 +114,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 {
 	// Your code here.
 	struct Env *env;
-	int ret;
-	if(envid2env(&env,envid,PTE_V)<0){
+	if(envid2env(envid,&env,PTE_V)<0){
 		printf("Sorry,in sys_set_pgfault_handler we can't get env by envid.\n");
 		return -E_INVAL;
 	}
@@ -150,7 +149,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		return -E_UNSPECIFIED;
 	}
 	//if perm is illegal
-	if(perm & PTE_COW == PTE_COW){
+	if(perm & PTE_COW !=0){
 		printf("Sorry,use sys_mem_alloc must promise perm not contain PTE_COW.\n");
 		return -E_INVAL;
 	}
@@ -159,7 +158,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-	perm = perm|PTE_V; //设置有效位
+	perm = perm|PTE_V|PTE_R; //设置有效位
     if(envid2env(envid,&env,perm)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
 		return -E_BAD_ENV;
@@ -178,8 +177,6 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		printf("Sorry,in sys_mem_alloc we can't insert the alloced page to env_pgdir.\n");
 		return -E_NO_MEM;
 	}
-	printf("Ok,you get it in sys_mem_alloc!\n");
-	printf("in sys_mem_alloc: va:%x.\n",va);
 	return ret;//success flag
 }
 
@@ -213,12 +210,12 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	perm = perm|PTE_V;//set valid bit
     //your code here
 	//first judge whether va >=UTP
-	if(srcva>=UTOP || dstva>=UTOP){
+	if(srcva>=UTOP || dstva>=UTOP || srcva==0 || dstva==0){
 		printf("Sorry,srcva:%x and dstva:%x must <UTOP(%x).\n",srcva,dstva,UTOP);
 		return -E_UNSPECIFIED;
 	}
 	//second we should check the perm legacy
-	if(perm & PTE_COW & PTE_R !=0){
+	if((perm & PTE_COW) !=0){
 		printf("Sorry,in sys_mem_map perm is illegal.\n");
 		return -E_INVAL;
 	}
@@ -257,7 +254,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 int sys_mem_unmap(int sysno, u_int envid, u_int va)
 {
 	// Your code here.
-	int ret;
+	int ret = 0;
 	struct Env *env;
 	if(va>=UTOP){
 		printf("Sorry,in sys_mem_unmap va:%x >=UTOP %x.\n",va,UTOP);
@@ -288,20 +285,36 @@ int sys_env_alloc(void)
 {
 	// Your code here.
 	struct Env *e;
+	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(curenv->env_tf),sizeof(struct Trapframe));
 	if(env_alloc(&e,curenv->env_id)<0){
 		printf("Sorry,because unable allocate a env,fork failed.\n");
 		return -E_NO_FREE_ENV;
 	}
 	e->env_status = ENV_NOT_RUNNABLE;
-	//careful,now we in kernel status,so we must care that CPU is ->KERNEL_SP
-	bcopy(KERNEL_SP-sizeof(struct Trapframe),&e->env_tf,sizeof(struct Trapframe));
-	//now curenv is in kernel status,represent curenv is in exception handle.
-	e->env_tf.pc = curenv->env_tf.cp0_epc;//need return curenv
-	//epc设置了父进程调用返回时，执行的PC位置.env_tf只在保存当前进程上下文才用到(进程不在主控CPU中
-	//,进程陷入内核态仍算作主控CPU).
+	bcopy(&(curenv->env_tf),&(e->env_tf),sizeof(struct Trapframe));
+	Pte *ppte;
+	u_int i;
+	for(i=UTEXT;i<UTOP-2*BY2PG;i+=BY2PG){
+		ppte = 0;
+		pgdir_walk(curenv->env_pgdir,i,0,&ppte);
+		if(ppte!=0){
+			if((*ppte & PTE_V)!=0){
+				if(*ppte & PTE_R !=0){
+					page_insert(curenv->env_pgdir,pa2page(PTE_ADDR(*ppte)),i,PTE_V|PTE_R|PTE_COW);
+					page_insert(e->env_pgdir,pa2page(PTE_ADDR(*ppte)),i,PTE_V|PTE_R|PTE_COW);
+				}else{
+					page_insert(e->env_pgdir,pa2page(PTE_ADDR(*ppte)),i,PTE_V);
+				}
+			}
+		}
+	}
+
+	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
-	e->env_pgfault_handler = curenv->env_pgfault_handler;
+	//e->env_pgfault_handler = curenv->env_pgfault_handler;
+	//e->env_xstacktop = curenv->env_xstacktop;
+	//e->env_pgfault_handler = 0;
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
 }
@@ -327,7 +340,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 		printf("Sorry,argument status in sys_set_env_status is not legal.\n");
 		return -E_INVAL;
 	}
-	if(envid2env(&env,envid,PTE_V)<0){
+	if(envid2env(envid,&env,PTE_V)<0){
 		printf("In sys_set_env_status we can't get the env.\n");
 		return -E_INVAL;
 	}
@@ -391,9 +404,9 @@ void sys_ipc_recv(int sysno, u_int dstva)
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
 	curenv->env_status = ENV_NOT_RUNNABLE;
-	//do we need to use KERNEL_SP and TIMESTACk?
+	//do we need to use KERNEL_SP and TIMESTACK.
 	/*I think this situation we need not to frame copy,because we may not use KERNEL_SP!*/
-	sched_yield();
+	sys_yield();
 }
 
 /* Overview:
@@ -416,11 +429,14 @@ void sys_ipc_recv(int sysno, u_int dstva)
 int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 					 u_int perm)
 {
-
 	//int r;
 	struct Env *e;
 	//struct Page *p;
 	perm = perm|PTE_V;
+	if(srcva==0){
+		printf("in sys_ipc_can_send found va is 0\n");
+		return -E_IPC_NOT_RECV;
+	}
 	if(srcva>=UTOP){
 		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
 		return -E_INVAL;

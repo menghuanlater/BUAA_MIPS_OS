@@ -84,12 +84,13 @@ pgfault(u_int va)
 {
 	//first we must make sure that va is align to BY2PG
 	int align_va = ROUNDDOWN(va,BY2PG);
-	//	writef("fork.c:pgfault():\t va:%x\n",va);
-	int curenv_id = syscall_getenvid();
-   	if(PADDR(align_va) & PTE_COW !=0){
-		user_bcopy((void *)align_va,(void *)UXSTACKTOP-BY2PG,BY2PG);
-		syscall_mem_map(curenv_id,UXSTACKTOP-BY2PG,curenv_id,align_va,PTE_V|PTE_R);
-		syscall_mem_unmap(curenv_id,UXSTACKTOP-BY2PG);
+	int id = syscall_getenvid();
+	//writef("fork.c:pgfault():\t va:%x\n",va);
+   	if((*vpt)[VPN(align_va)] & PTE_COW !=0){
+		syscall_mem_alloc(id,UXSTACKTOP-2*BY2PG,BY2PG);
+		user_bcopy((void *)align_va,(void *)UXSTACKTOP-2*BY2PG,BY2PG);
+		syscall_mem_map(id,UXSTACKTOP-2*BY2PG,id,align_va,PTE_V|PTE_R);
+		syscall_mem_unmap(id,UXSTACKTOP-2*BY2PG);
 	}else{
 		user_panic("va page is not PTE_COW.\n");
 	}	
@@ -134,14 +135,14 @@ duppage(u_int envid, u_int pn)
 	 */
 	// writef("");
 	u_int perm;
-
 	perm = (*vpt)[pn] & 0x00000fff; //取出标记位
-	if(perm & PTE_R !=0 || perm & PTE_COW){
-		if(perm & PTE_LIBRARY){
+	if((perm & PTE_R !=0) || (perm & PTE_COW!=0)){
+		/*if(perm & PTE_LIBRARY){
 			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
 		}else{
 			perm = PTE_V | PTE_R;
-		}
+		}*/
+		perm = perm | PTE_V | PTE_R | PTE_COW;
 	}
 	if(syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm)<0){
 		user_panic("failed page map in duppage.\n");
@@ -168,29 +169,24 @@ fork(void)
 	extern struct Env *envs;
 	extern struct Env *env;//将其指向当前的进程，如果子进程无法创建，则指向父进程
 	u_int i;
-
 	//The parent installs pgfault using set_pgfault_handler
 	set_pgfault_handler(pgfault);	
 	//alloc a new env
-	if((newenvid = syscall_env_alloc())<0){
-		user_panic("Sorry,in fork we found newenv not alloc.\n");
+	if((newenvid = syscall_env_alloc())==0){
+		//in child env
 		env = &envs[ENVX(syscall_getenvid())];
 		return 0;
 	}
-	
-	env = &envs[ENVX(newenvid)];
-	
 	/*use vpt vpd，我们只需要将父进程中相关的用户空间的页复制到子进程用户空间即可*/
 	/*注意创建一个进程的时候会调用env_vm_init函数，这个函数有个非常关键的操作,我们创建
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
 	boot_pgdir作为模板复制的，不需要再次复制拷贝*/
 	/*we need judge whether the pgtable is exist or the page is exist.*/
-	for(i=0;i<UXSTACKTOP-BY2PG;i+=BY2PG){
+	for(i=UTEXT;i<UXSTACKTOP-BY2PG;i+=BY2PG){
 		if((*vpd)[VPN(i)/1024]!=0 && (*vpt)[VPN(i)]!=0){
 			duppage(newenvid,VPN(i));
 		}
 	}
-
 	//搭建异常处理栈，分配一个页，让别的进程不抢占此页
 	if(syscall_mem_alloc(newenvid,UXSTACKTOP-BY2PG,PTE_V|PTE_R)<0){
 		user_panic("failed alloc UXSTACK.\n");

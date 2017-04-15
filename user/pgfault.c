@@ -30,7 +30,6 @@ set_pgfault_handler(void (*fn)(u_int va))
 
 		//		panic("set_pgfault_handler not implemented");
 	}
-
 	// Save handler pointer for assembly to call.
 	__pgfault_handler = fn;
 }
