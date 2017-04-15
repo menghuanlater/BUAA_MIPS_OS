@@ -64,7 +64,9 @@ u_int sys_getenvid(void)
 void sys_yield(void)
 {
 	//we need use sched_yield() and recorve process trapfram
-	bcopy(KERNEL_SP - sizeof(struct Trapframe),TIMESTACK - sizeof(struct Trapframe),sizeof(struct Trapframe));
+	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
+	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
+	bcopy(src,dst,sizeof(struct Trapframe));
 	sched_yield();//执行时间片轮转调度
 }
 
@@ -117,7 +119,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 		return -E_INVAL;
 	}
 	env->env_pgfault_handler = func;
-	env->env_xstacktop = TRUP(xstacktop);
+	env->env_xstacktop = xstacktop;
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
 }
@@ -147,22 +149,14 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 		return -E_UNSPECIFIED;
 	}
 	//if perm is illegal
-<<<<<<< HEAD
-	/*if((perm & PTE_COW)!=0){
-=======
 	/*if((perm & PTE_COW) !=0){
->>>>>>> lab4_test
 		printf("Sorry,use sys_mem_alloc must promise perm not contain PTE_COW.\n");
 		return -E_INVAL;
 	}*/
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
-<<<<<<< HEAD
-	int ret = 0;
-=======
 	perm = perm|PTE_V|PTE_R; //设置有效位
->>>>>>> lab4_test
     if(envid2env(envid,&env,perm)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
 		return -E_BAD_ENV;
@@ -175,15 +169,8 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	//first we need to judge whether va has mapped a page,if true,carry out page_remove
 	Pte *ppte;
 	/*if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
-<<<<<<< HEAD
-		printf("555 need to unmap page.va:%x\n",va);
 		page_remove(env->env_pgdir,va);
 	}*/
-	bzero(page2kva(ppage),BY2PG);
-=======
-		page_remove(env->env_pgdir,va);
-	}*/
->>>>>>> lab4_test
 	if(page_insert(env->env_pgdir,ppage,va,perm)<0){
 		printf("Sorry,in sys_mem_alloc we can't insert the alloced page to env_pgdir.\n");
 		return -E_NO_MEM;
@@ -226,12 +213,8 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 		return -E_UNSPECIFIED;
 	}
 	//second we should check the perm legacy
-<<<<<<< HEAD
-	/*if((perm & PTE_COW)!=0){
-=======
 	/*if((perm & PTE_COW) !=0){
 		printf("哈哈.%x  cdscds",perm);
->>>>>>> lab4_test
 		printf("Sorry,in sys_mem_map perm is illegal.\n");
 		return -E_INVAL;
 	}*/
@@ -280,7 +263,7 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 		printf("Sorry,in sys_mem_unmap we can't get env.\n");
 		return -E_INVAL;
 	}
-	page_remove(env->env_pgdir,ROUNDDOWN(va,BY2PG));
+	page_remove(env->env_pgdir,va);
 	return ret;
 	//	panic("sys_mem_unmap not implemented");
 }
@@ -324,15 +307,12 @@ int sys_env_alloc(void)
 			}
 		}
 	}
-	e->env_tf.pc = e->env_tf.cp0_epc;
+
+	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
 	e->env_pgfault_handler = curenv->env_pgfault_handler;
-<<<<<<< HEAD
-	e->env_xstacktop = curenv->env_xstacktop;
-=======
 	//e->env_xstacktop = curenv->env_xstacktop;
->>>>>>> lab4_test
 	//e->env_pgfault_handler = 0;
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
@@ -382,10 +362,6 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {
-	struct Env *env;
-	int r;
-	if((r=envid2env(envid,&env,1))<0) return r;
-	env->env_tf = *tf;
 	return 0;
 }
 
@@ -456,10 +432,10 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	struct Env *e;
 	//struct Page *p;
 	perm = perm|PTE_V;
-	/*if(srcva==0){
+	if(srcva==0){
 		printf("in sys_ipc_can_send found va is 0\n");
-		return -E_INVAL;
-	}*/
+		return -E_IPC_NOT_RECV;
+	}
 	if(srcva>=UTOP){
 		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
 		return -E_INVAL;

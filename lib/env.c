@@ -1,5 +1,5 @@
 /* Notes written by Qian Liu <qianlxc@outlook.com>
-  If you find any bug, please contact with me.x*/
+  If you find any bug, please contact with me.*/
 
 #include <mmu.h>
 #include <error.h>
@@ -131,7 +131,7 @@ env_setup_vm(struct Env *e)
 	}
 	p->pp_ref++;
 	pgdir = (Pde *)page2kva(p);
-   	printf("pgdir:%x\n",pgdir); 
+    
     /*Step 2: Zero pgdir's field before UTOP. */
 	for (i = 0; i < PDX(UTOP); i++) {
 		pgdir[i] = 0;

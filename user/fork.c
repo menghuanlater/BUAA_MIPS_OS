@@ -84,22 +84,16 @@ pgfault(u_int va)
 {
 	//first we must make sure that va is align to BY2PG
 	u_int align_va = ROUNDDOWN(va,BY2PG);
-<<<<<<< HEAD
-
-   	if(((*vpt)[VPN(align_va)] & PTE_COW)!=0){
-		syscall_mem_alloc(syscall_getenvid(),UXSTACKTOP-2*BY2PG,BY2PG);
-=======
 	u_int id = syscall_getenvid();
 	//writef("fork.c:pgfault():\t va:%x\n",va);
    	if((*vpt)[VPN(align_va)] & PTE_COW !=0){
 		syscall_mem_alloc(id,UXSTACKTOP-2*BY2PG,BY2PG);
->>>>>>> lab4_test
 		user_bcopy((void *)align_va,(void *)UXSTACKTOP-2*BY2PG,BY2PG);
-		syscall_mem_map(syscall_getenvid(),UXSTACKTOP-2*BY2PG,syscall_getenvid(),align_va,PTE_V|PTE_R);
-		syscall_mem_unmap(syscall_getenvid(),UXSTACKTOP-2*BY2PG);
+		syscall_mem_map(id,UXSTACKTOP-2*BY2PG,id,align_va,PTE_V|PTE_R);
+		syscall_mem_unmap(id,UXSTACKTOP-2*BY2PG);
 	}else{
-		user_panic("sad.\n");
-	}
+		user_panic("va page is not PTE_COW.\n");
+	}	
 }
 
 /* Overview:
@@ -139,22 +133,19 @@ duppage(u_int envid, u_int pn)
 	 * although we have debugged it for serveral weeks. If you face this
 	 * bug, we would like to say "Good luck. God bless."
 	 */
+	// writef("");
 	u_int perm;
 	perm = (*vpt)[pn] & 0xfff; //取出标记位
-<<<<<<< HEAD
-	if((perm & PTE_R)!=0  ||  (perm & PTE_COW)!=0){
-=======
 	if(((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)){
 		/*if(perm & PTE_LIBRARY){
 			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
 		}else{
 			perm = PTE_V | PTE_R;
 		}*/
->>>>>>> lab4_test
 		perm = perm | PTE_V | PTE_R | PTE_COW;
-		syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm);
-	}else{
-		syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm);
+	}
+	if(syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm)<0){
+		user_panic("failed page map in duppage.\n");
 	}
 
 	//user_panic("duppage not implemented");
@@ -186,7 +177,6 @@ fork(void)
 		env = &envs[ENVX(syscall_getenvid())];
 		return 0;
 	}
-	writef("what.\n");
 	/*use vpt vpd，我们只需要将父进程中相关的用户空间的页复制到子进程用户空间即可*/
 	/*注意创建一个进程的时候会调用env_vm_init函数，这个函数有个非常关键的操作,我们创建
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用

@@ -22,10 +22,10 @@ void sched_yield(void)
 			position = 0;
 		}
 		if(envs[position].env_status == ENV_RUNNABLE){
-			break;
+			env_run(&envs[position]);
+			return;
 		}
 	}
-	env_run(&envs[position]);
 }
 /*void sched_yield(void){
 	static int i = -1;
