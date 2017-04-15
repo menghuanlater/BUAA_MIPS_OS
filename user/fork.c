@@ -170,6 +170,7 @@ fork(void)
 		env = &envs[ENVX(syscall_getenvid())];
 		return 0;
 	}
+	writef("what.\n");
 	/*use vpt vpd，我们只需要将父进程中相关的用户空间的页复制到子进程用户空间即可*/
 	/*注意创建一个进程的时候会调用env_vm_init函数，这个函数有个非常关键的操作,我们创建
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
@@ -192,7 +193,6 @@ fork(void)
 	}
 	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
 	syscall_set_env_status(newenvid,ENV_RUNNABLE);
-	writef("hehehe");
 	return newenvid;
 }
 

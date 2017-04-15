@@ -360,6 +360,10 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {
+	struct Env *env;
+	int r;
+	if((r=envid2env(envid,&env,1))<0) return r;
+	env->env_tf = *tf;
 	return 0;
 }
 
