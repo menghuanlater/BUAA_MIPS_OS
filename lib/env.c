@@ -437,10 +437,9 @@ env_run(struct Env *e)
 
     /*Step 3: Use lcontext() to switch to its address space. */
 	lcontext(curenv->env_pgdir);	
-
     /*Step 4: Use env_pop_tf() to restore the environment's
      * environment   registers and drop into user mode in the
-     * the   environment.
+     * the environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
 	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
