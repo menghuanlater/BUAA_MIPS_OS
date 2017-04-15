@@ -1,5 +1,5 @@
 /* Notes written by Qian Liu <qianlxc@outlook.com>
-  If you find any bug, please contact with me.*/
+  If you find any bug, please contact with me.x*/
 
 #include <mmu.h>
 #include <error.h>
