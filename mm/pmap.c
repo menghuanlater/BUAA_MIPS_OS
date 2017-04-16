@@ -93,7 +93,7 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
     /* Hint: Use KADDR and PTE_ADDR to get the page table from page directory
      * entry value. */
 	pgdir_entryp = (Pde *)&pgdir[PDX(va)];//pgdir在mips_vm_init()中分配，对应地址是虚拟地址
-	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));//to virtual address
+	pgtable = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp));//to virtual address
 
     /* Step 2: If the corresponding page table is not exist and parameter `create`
      * is set, create one. And set the correct permission bits for this new page
@@ -101,14 +101,14 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 	if((*pgdir_entryp & PTE_V)==0x0){
 		if(create){
 			pgtable = alloc(BY2PG,BY2PG,1);//返回的是虚拟地址，需要使用PADDR函数
-			*pgdir_entryp = PADDR(pgtable)|PTE_V; //由于页大小为4KB，所以物理地址的低12为本全为0，正好可以用于设置符号位.
+			*pgdir_entryp =(Pde*)(PADDR(pgtable)|PTE_V|PTE_R); //由于页大小为4KB，所以物理地址的低12为本全为0，正好可以用于设置符号位.
 		}else{
 			return 0;
 		}
 	}
 
     /* Step 3: Get the page table entry for `va`, and return it. */
-	pgtable_entryp = &pgtable[PTX(va)];
+	pgtable_entryp =(Pte *) &pgtable[PTX(va)];
 	return pgtable_entryp;
 }
 
@@ -133,9 +133,9 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
     /* Hint: Use `boot_pgdir_walk` to get the page table entry of virtual address `va`. */
 	for(i=0;i<size%BY2PG;i++){
 		pgtable_entry = boot_pgdir_walk(pgdir,va+i*BY2PG,1);
-		*pgtable_entry = (pa + i*BY2PG)|perm|PTE_V;
+		*pgtable_entry = (pa + i*BY2PG)|perm|PTE_V|PTE_R;
 	}
-	pgdir[PDX(va)] |= perm|PTE_V;
+	pgdir[PDX(va)] |= perm|PTE_V|PTE_R;
 }
 
 /* Oierview:
@@ -288,7 +288,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 
     /* Step 1: Get the corresponding page directory entry and page table. */
 	pgdir_entryp = (Pde *)&(pgdir[PDX(va)]);
-	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));
+	pgtable = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp));
 	/*by the va,get the pa; reagain,by the pa,get the va of the two-level page table array*/
 	//use PTE_ADDR is because the low-12bit of pa is not all 0,need change.
 
@@ -316,7 +316,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 	}
 
     /* Step 3: Set the page table entry to `*ppte` as return value. */
-	Pte * pgtable_entryp = &pgtable[PTX(va)];
+	Pte * pgtable_entryp = (Pte *)&pgtable[PTX(va)];
 	*ppte = pgtable_entryp;
     return 0;
 }
@@ -553,7 +553,14 @@ page_check(void)
     page_free(pp0);
     page_free(pp1);
     page_free(pp2);
-
+	/*u_long *va = 0x00012450;
+	u_long *pa;
+	page_insert(boot_pgdir,pp,va,PTE_R);
+	pa = va2pa(boot_pgdir,va);
+	printf("va: %x -> pa: %x\n",va,pa);
+	*va = 0x88888;
+	printf("va value: %x\n",va);
+	printf("pa value: %x\n",(va2pa(boot_pgdir,va)));*/
     printf("page_check() succeeded!\n");
 }
 

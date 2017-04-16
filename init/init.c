@@ -12,8 +12,8 @@ void mips_init()
 	
 	mips_vm_init();
 	page_init();
-	
-	env_init();
+	page_check();
+//	env_init();
 
 
 	/*you can create some processes(env) here. in terms of binary code, please refer current directory/code_a.c
@@ -25,8 +25,8 @@ void mips_init()
 		ENV_CREATE(user_B);
 		printf("OK,envA and envB create success!\n");
 	*/
-	ENV_CREATE(user_pingpong);
-
+	//ENV_CREATE(user_pingpong);
+	//ENV_CREATE(user_pingpong);
 	trap_init();
 	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");

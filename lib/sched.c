@@ -21,6 +21,9 @@ void sched_yield(void)
 		if(position==NENV){ //when it over limit range,then we reset it to the array head.
 			position = 0;
 		}
+		//if(envs[position].env_id == 4097){
+		//	envs[position].env_status = ENV_RUNNABLE;
+		//}
 		if(envs[position].env_status == ENV_RUNNABLE){
 			env_run(&envs[position]);
 			return;
