@@ -131,7 +131,7 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
 		printf("the size is not multiple of BY2PG\n");
     /* Step 2: Map virtual address space to physical address. */
     /* Hint: Use `boot_pgdir_walk` to get the page table entry of virtual address `va`. */
-	for(i=0;i<size%BY2PG;i++){
+	for(i=0;i<size/BY2PG;i++){
 		pgtable_entry = boot_pgdir_walk(pgdir,va+i*BY2PG,1);
 		*pgtable_entry = (pa + i*BY2PG)|perm|PTE_V|PTE_R;
 	}
