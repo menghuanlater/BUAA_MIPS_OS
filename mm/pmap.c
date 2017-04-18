@@ -23,7 +23,8 @@ void count_page()
 	int usenum = 0;
 	int allocnum = 0;
 	int freenum = 0;
-	for(int i=0;i<npage;i++){
+	int i;
+	for(i=0;i<npage;i++){
 		if(pages[i].pp_ref==0)
 			freenum++;
 		if(pages[i].pp_ref==1)
