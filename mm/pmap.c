@@ -25,10 +25,10 @@ void count_page()
 	int freenum = 0;
 	int i;
 	for(i=0;i<npage;i++){
-		if(pages[i].pp_ref==0 && pages[i].pp_link!=NULL)
+		if(pages[i].pp_ref==0)
 			freenum++;
-		if(pages[i].pp_ref==0 && pages[i].pp_link==NULL)
-			allocnum++;
+		//if(pages[i].pp_ref==0 && pages[i].pp_link)
+		//	allocnum++;
 		if(pages[i].pp_ref>=1)
 			usenum++;
 	}
