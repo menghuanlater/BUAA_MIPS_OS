@@ -17,6 +17,24 @@ Pde *boot_pgdir;
 struct Page *pages;
 static u_long freemem;
 
+void count_page()
+{
+	static int callnum = 1;
+	int usenum = 0;
+	int allocnum = 0;
+	int freenum = 0;
+	for(int i=0;i<npage;i++){
+		if(pages[i].pp_ref==0)
+			freenum++;
+		if(pages[i].pp_ref==1)
+			allocnum++;
+		if(pages[i].pp_ref>1)
+			usenum++;
+	}
+	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,allocnum,freenum);
+	callnum++;
+}
+
 static struct Page_list page_free_list;	/* Free list of physical pages */
 
 
