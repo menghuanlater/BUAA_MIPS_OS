@@ -27,9 +27,9 @@ void count_page()
 	for(i=0;i<npage;i++){
 		if(pages[i].pp_ref==0)
 			freenum++;
-		//if(pages[i].pp_ref==0 && pages[i].pp_link)
-		//	allocnum++;
-		if(pages[i].pp_ref>=1)
+		if(pages[i].pp_ref>=1 && (page2pa(&pages[i])&PTE_V)==0)
+			allocnum++;
+		if(pages[i].pp_ref>=1 && (page2pa(&pages[i])&PTE_V)!=0)
 			usenum++;
 	}
 	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,allocnum,freenum);
