@@ -32,7 +32,7 @@ void count_page()
 	}
 	struct Page *kaka = LIST_FIRST(&page_free_list);
 	struct Page *temp = LIST_FIRST(&page_free_list);
-	while(temp!=kaka){
+	while(temp!=NULL){
 		freenum++;
 		temp = LIST_NEXT(temp,pp_link);
 	}
