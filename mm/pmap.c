@@ -29,7 +29,7 @@ void count_page()
 			freenum++;
 		if(pages[i].pp_ref==0 && pages[i].pp_link==NULL)
 			allocnum++;
-		if(pages[i].pp_ref>1)
+		if(pages[i].pp_ref>=1)
 			usenum++;
 	}
 	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,allocnum,freenum);
