@@ -17,6 +17,8 @@ Pde *boot_pgdir;
 struct Page *pages;
 static u_long freemem;
 
+static struct Page_list page_free_list;
+
 void count_page()
 {
 	static int callnum = 1;
@@ -25,18 +27,19 @@ void count_page()
 	int freenum = 0;
 	int i;
 	for(i=0;i<npage;i++){
-		if(pages[i].pp_ref==0)
-			freenum++;
-		if(pages[i].pp_ref>=1 && (page2pa(&pages[i])&PTE_V)==0)
-			allocnum++;
-		if(pages[i].pp_ref>=1 && (page2pa(&pages[i])&PTE_V)!=0)
+		if(pages[i].pp_ref>=1)
 			usenum++;
 	}
-	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,allocnum,freenum);
+	struct Page *kaka = LIST_FIRST(&page_free_list);
+	struct Page *temp = LIST_FIRST(&page_free_list);
+	while(temp!=kaka){
+		freenum++;
+		temp = LIST_NEXT(temp,pp_link);
+	}
+	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,npage-usenum-freenum,freenum);
 	callnum++;
 }
-
-static struct Page_list page_free_list;	/* Free list of physical pages */
+	/* Free list of physical pages */
 
 
 /* Overview:
