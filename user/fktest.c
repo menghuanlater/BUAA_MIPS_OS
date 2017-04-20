@@ -7,16 +7,16 @@ void umain()
 	int id = 0;
 
 	if ((id = fork()) == 0) {
-		writef("fork?!!!!!!!!!\n");
 		if ((id = fork()) == 0) {
 			a += 3;
+
 			for (;;) {
 				writef("\t\tthis is child2 :a:%d\n", a);
 			}
 		}
-		
+
 		a += 2;
-		
+
 		for (;;) {
 			writef("\tthis is child :a:%d\n", a);
 		}
