@@ -82,18 +82,25 @@ void user_bzero(void *v, u_int n)
 static void
 pgfault(u_int va)
 {
+	u_int temp = 0x50000000;
 	//first we must make sure that va is align to BY2PG
-	u_int align_va = ROUNDDOWN(va,BY2PG);
-	u_int id = syscall_getenvid();
+	va = ROUNDDOWN(va,BY2PG);
+	u_int perm = (*vpt)[VPN(va)]& 0xfff;
 	//writef("fork.c:pgfault():\t va:%x\n",va);
-   	if((*vpt)[VPN(align_va)] & PTE_COW !=0){
-		syscall_mem_alloc(id,UXSTACKTOP-2*BY2PG,BY2PG);
-		user_bcopy((void *)align_va,(void *)UXSTACKTOP-2*BY2PG,BY2PG);
-		syscall_mem_map(id,UXSTACKTOP-2*BY2PG,id,align_va,PTE_V|PTE_R);
-		syscall_mem_unmap(id,UXSTACKTOP-2*BY2PG);
+	if(perm & PTE_COW){
+		if(syscall_mem_alloc(0,temp,perm &(~PTE_COW))<0){
+			user_panic("syscall_mem_alloc error.\n");
+		}
+		user_bcopy((void *)va,(void *)temp,BY2PG);
+		if(syscall_mem_map(0,temp,0,va,perm &(~PTE_COW))<0){
+			user_panic("syscall_mem_map error.\n");
+		}
+		if(syscall_mem_unmap(0,temp)<0){
+			user_panic("syscall_mem_unmap error.\n");
+		}
 	}else{
 		user_panic("va page is not PTE_COW.\n");
-	}	
+	}
 }
 
 /* Overview:
@@ -144,7 +151,7 @@ duppage(u_int envid, u_int pn)
 		}*/
 		perm = perm | PTE_V | PTE_R | PTE_COW;
 	}
-	if(syscall_mem_map(syscall_getenvid(),pn*BY2PG,envid,pn*BY2PG,perm)<0){
+	if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm)<0){
 		user_panic("failed page map in duppage.\n");
 	}
 
@@ -182,8 +189,8 @@ fork(void)
 	子进程，复制父进程的地址空间只需要复制UTOP以下的页即可，因为所有进程UTOP以上的页都是利用
 	boot_pgdir作为模板复制的，不需要再次复制拷贝*/
 	/*we need judge whether the pgtable is exist or the page is exist.*/
-	for(i=UTEXT;i<UXSTACKTOP-BY2PG;i+=BY2PG){
-		if((*vpd)[VPN(i)/1024]!=0 && (*vpt)[VPN(i)]!=0){
+	for(i=0;i<UTOP-BY2PG;i+=BY2PG){
+		if(((*vpd)[VPN(i)/1024])!=0 && ((*vpt)[VPN(i)])!=0){
 			duppage(newenvid,VPN(i));
 		}
 	}

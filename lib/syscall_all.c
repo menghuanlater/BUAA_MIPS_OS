@@ -66,7 +66,7 @@ void sys_yield(void)
 	//we need use sched_yield() and recorve process trapfram
 	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
 	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
-	bcopy(src,dst,sizeof(struct Trapframe));
+	bcopy((void *)src,(void *)dst,sizeof(struct Trapframe));
 	sched_yield();//执行时间片轮转调度
 }
 
@@ -144,20 +144,19 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 {
 	//if va is illegal
-	if(va>=UTOP){
+	if(va>=UTOP || va<0){
 		printf("Sorry,use sys_mem_alloc must promise va < UTOP(%x),but now va:%x\n",UTOP,va);
 		return -E_UNSPECIFIED;
 	}
 	//if perm is illegal
-	/*if((perm & PTE_COW) !=0){
+	if((perm & PTE_COW) || !(perm & PTE_V)){
 		printf("Sorry,use sys_mem_alloc must promise perm not contain PTE_COW.\n");
 		return -E_INVAL;
-	}*/
+	}
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
-	perm = perm|PTE_V|PTE_R; //设置有效位
-    if(envid2env(envid,&env,perm)<0){
+    if(envid2env(envid,&env,PTE_V)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
 		return -E_BAD_ENV;
 	}
@@ -205,26 +204,24 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	ret = 0;
 	round_srcva = ROUNDDOWN(srcva, BY2PG);
 	round_dstva = ROUNDDOWN(dstva, BY2PG);
-	perm = perm|PTE_V;//set valid bit
     //your code here
 	//first judge whether va >=UTP
-	if(srcva>=UTOP || dstva>=UTOP || srcva==0 || dstva==0){
+	if(srcva>=UTOP || dstva>=UTOP || srcva<0 || dstva<0){
 		printf("Sorry,srcva:%x and dstva:%x must <UTOP(%x).\n",srcva,dstva,UTOP);
 		return -E_UNSPECIFIED;
 	}
 	//second we should check the perm legacy
-	/*if((perm & PTE_COW) !=0){
-		printf("哈哈.%x  cdscds",perm);
+	if(!(perm & PTE_V)){
 		printf("Sorry,in sys_mem_map perm is illegal.\n");
 		return -E_INVAL;
-	}*/
+	}
 	//third we judge whether srcenv exist.
-	if(envid2env(srcid,&srcenv,perm)<0){
+	if(envid2env(srcid,&srcenv,PTE_V)<0){
 		printf("Sorry,we can't get srcenv!\n");
 		return -E_BAD_ENV;
 	}
 	//forth we judge whether dstenv exist.
-	if(envid2env(dstid,&dstenv,perm)<0){
+	if(envid2env(dstid,&dstenv,PTE_V)<0){
 		printf("Sorry,we can't get dstenv!\n");
 		return -E_BAD_ENV;
 	}
@@ -284,7 +281,7 @@ int sys_env_alloc(void)
 {
 	// Your code here.
 	struct Env *e;
-	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(curenv->env_tf),sizeof(struct Trapframe));
+	//bcopy(KERNEL_SP-sizeof(struct Trapframe),&(curenv->env_tf),sizeof(struct Trapframe));
 	if(env_alloc(&e,curenv->env_id)<0){
 		printf("Sorry,because unable allocate a env,fork failed.\n");
 		return -E_NO_FREE_ENV;
@@ -307,11 +304,10 @@ int sys_env_alloc(void)
 			}
 		}
 	}
-
 	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
-	e->env_pgfault_handler = curenv->env_pgfault_handler;
+	//e->env_pgfault_handler = curenv->env_pgfault_handler;
 	//e->env_xstacktop = curenv->env_xstacktop;
 	//e->env_pgfault_handler = 0;
 	return e->env_id;
@@ -362,6 +358,13 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {
+	int ret;
+	struct Env *env;
+	if((ret=envid2env(envid,&env,PTE_V))<0)
+	{
+		return ret;
+	}
+	env->env_tf = *tf;
 	return 0;
 }
 
@@ -430,9 +433,10 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 {
 	//int r;
 	struct Env *e;
-	//struct Page *p;
+	struct Page *p;
+	Pte *ppte;
 	perm = perm|PTE_V;
-	if(srcva==0){
+	if(srcva<0){
 		printf("in sys_ipc_can_send found va is 0\n");
 		return -E_IPC_NOT_RECV;
 	}
@@ -440,7 +444,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
 		return -E_INVAL;
 	}
-	if(envid2env(envid,&e,perm)){
+	if(envid2env(envid,&e,PTE_V)){
 		printf("Sorry,in sys_ipc_can_send the envid can't found the env.\n");
 		return -E_INVAL;
 	}
@@ -448,7 +452,17 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		printf("Sorry,in sys_ipc_can_send we found env_ipc_recving is 0.\n");
 		return -E_IPC_NOT_RECV;
 	}
+	if((p=page_lookup(curenv->env_pgdir,srcva,0))<=0){
+		printf("send srcva is not exist.\n");
+		return -E_INVAL;
+	}
+	if(page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm<0)){
+		printf("dst pot failed.\n");
+		return -E_INVAL;
+	}
+
 	/*if judge success*/
+	e->env_ipc_perm = perm;
 	e->env_ipc_recving = 0;
 	e->env_status = ENV_RUNNABLE;
 	e->env_ipc_value = value;
