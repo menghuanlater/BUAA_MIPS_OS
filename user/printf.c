@@ -48,7 +48,7 @@ _user_panic(const char *file, int line, const char *fmt, ...)
 
 	for (;;);
 }
-void 
+/*void 
 _panic(const char *file, int line,const char *fmt,...)
 {
 	va_list ap;
@@ -60,4 +60,4 @@ _panic(const char *file, int line,const char *fmt,...)
 	va_end(ap);
 
 	for(;;);
-}
+}*/
