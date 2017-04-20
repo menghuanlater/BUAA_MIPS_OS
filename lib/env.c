@@ -241,36 +241,31 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			return -E_NO_MEM;
 		}
 		p->pp_ref++;
-		r = page_insert(env->env_pgdir,p,va+i-offset,PTE_V|PTE_R);
+		if(i==0)
+			bcopy(bin,(char *)page2kva(p)+offset,((BY2PG-offset)<bin_size-i)?(BY2PG-offset):(bin_size - i));
+		else
+			bcopy(bin+i-offset,(char *)page2kva(p),(BY2PG<bin_size-i)?BY2PG:(bin_size-i));
+		r = page_insert(env->env_pgdir,p,va+i,PTE_V|PTE_R);
 		if(r<0){
 			printf("Sorry,insert a page is failed!\n");
 			return -E_NO_MEM;
 		}
-		if(i+BY2PG>=bin_size)
-			r = bin_size - i;
-		else
-			r = BY2PG;
-		bcopy(bin+i,page2kva(p)+offset,r);
+
 	}
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
-	i = bin_size;
 	while (i < sgsize) {
 		if(page_alloc(&p)<0){
 			printf("Sorry,alloc page failed!\n");
 			return -E_NO_MEM;
 		}
 		p->pp_ref++;
-		r = page_insert(env->env_pgdir,p,va+i-offset,PTE_V|PTE_R);
+		r = page_insert(env->env_pgdir,p,va+i,PTE_V|PTE_R);
 		if(r<0){
 			printf("Sorry,alloc page failed!\n");
 			return -E_NO_MEM;
 		}
-		if(i+BY2PG>=sgsize)
-			r = sgsize - i;
-		else 
-			r = BY2PG;
-		bzero(page2kva(p)+offset,r);
+		//bzero(page2kva(p)+offset,BY2PG);
 		i+=BY2PG;
 	}
 	return 0;
@@ -428,19 +423,21 @@ env_run(struct Env *e)
     *  context switch.You can imitate env_destroy() 's behaviors.*/
 	struct Trapframe *old = (struct Trapframe *)(TIMESTACK-sizeof(struct Trapframe));
 	if(curenv){
-		bcopy(old,&curenv->env_tf,sizeof(struct Trapframe));
+		bcopy(old,&(curenv->env_tf),sizeof(struct Trapframe));
 		//curenv->env_tf.pc += 4;//aim to mips 32
-		curenv->env_tf.pc = curenv->env_tf.cp0_epc;
+		curenv->env_tf.pc = old->cp0_epc;
+		//printf("cp0_epc:%x\n",curenv->env_tf.pc);
 	}
+	//printf("id:%d\n",e->env_id);
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
-
     /*Step 3: Use lcontext() to switch to its address space. */
-	lcontext(curenv->env_pgdir);	
+	lcontext(KADDR(curenv->env_cr3));	
     /*Step 4: Use env_pop_tf() to restore the environment's
      * environment   registers and drop into user mode in the
-     * the environment.
+     * the   environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
+
 	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
 }
