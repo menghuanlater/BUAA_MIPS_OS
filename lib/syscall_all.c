@@ -66,12 +66,7 @@ void sys_yield(void)
 	//we need use sched_yield() and recorve process trapfram
 	struct Trapframe * src = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
 	struct Trapframe * dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
-<<<<<<< HEAD
-	bcopy(src,dst,sizeof(struct Trapframe));
-	//printf("excuse me.\n");
-=======
 	bcopy((void *)src,(void *)dst,sizeof(struct Trapframe));
->>>>>>> lab4_test
 	sched_yield();//执行时间片轮转调度
 }
 
@@ -291,8 +286,8 @@ int sys_env_alloc(void)
 		printf("Sorry,because unable allocate a env,fork failed.\n");
 		return -E_NO_FREE_ENV;
 	}
+	e->env_status = ENV_NOT_RUNNABLE;
 	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
-	//bcopy(USTACKTOP-BY2PG,UXSTACKTOP-BY2PG,BY2PG);
 	Pte *ppte;
 	u_int i;
 	for(i=UTEXT;i<UTOP-2*BY2PG;i+=BY2PG){
@@ -312,10 +307,6 @@ int sys_env_alloc(void)
 	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
-<<<<<<< HEAD
-	e->env_status = ENV_NOT_RUNNABLE;
-=======
->>>>>>> lab4_test
 	//e->env_pgfault_handler = curenv->env_pgfault_handler;
 	//e->env_xstacktop = curenv->env_xstacktop;
 	//e->env_pgfault_handler = 0;
@@ -445,14 +436,10 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	struct Page *p;
 	Pte *ppte;
 	perm = perm|PTE_V;
-<<<<<<< HEAD
-	/*if(srcva==0){
-=======
 	if(srcva<0){
->>>>>>> lab4_test
 		printf("in sys_ipc_can_send found va is 0\n");
 		return -E_IPC_NOT_RECV;
-	}*/
+	}
 	if(srcva>=UTOP){
 		printf("Sorry,in sys_ipc_can_send srcva %x need <UTOP %x.\n",srcva,UTOP);
 		return -E_INVAL;
@@ -462,7 +449,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		return -E_INVAL;
 	}
 	if(e->env_ipc_recving==0){
-		//printf("Sorry,in sys_ipc_can_send we found env_ipc_recving is 0.\n");
+		printf("Sorry,in sys_ipc_can_send we found env_ipc_recving is 0.\n");
 		return -E_IPC_NOT_RECV;
 	}
 	if((p=page_lookup(curenv->env_pgdir,srcva,0))<=0){

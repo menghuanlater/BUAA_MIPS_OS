@@ -20,7 +20,7 @@ void user_bcopy(const void *src, void *dst, size_t len)
 {
 	void *max;
 
-	//writef("~~~~~~~~~~~~~~~~ src:%x dst:%x len:%x\n",(int)src,(int)dst,len);
+	//	writef("~~~~~~~~~~~~~~~~ src:%x dst:%x len:%x\n",(int)src,(int)dst,len);
 	max = dst + len;
 
 	// copy machine words while possible
@@ -84,19 +84,6 @@ pgfault(u_int va)
 {
 	u_int temp = 0x50000000;
 	//first we must make sure that va is align to BY2PG
-<<<<<<< HEAD
-	u_int align_va = ROUNDDOWN(va,BY2PG);
-	u_int id = syscall_getenvid();
-	//writef("env_id:%d\n",syscall_getenvid());
-	//writef("fork.c:pgfault():\t va:%x\n",va);
-	//writef("huchila : %d\n",(*vpt)[VPN(align_va)] & PTE_COW);
-   	if((*vpt)[VPN(align_va)] & PTE_COW){
-		//writef("ren sheng lala.\n");
-		syscall_mem_alloc(id,UXSTACKTOP-2*BY2PG,BY2PG);
-		user_bcopy((void *)align_va,(void *)UXSTACKTOP-2*BY2PG,BY2PG);
-		syscall_mem_map(id,UXSTACKTOP-2*BY2PG,id,align_va,PTE_V|PTE_R);
-		syscall_mem_unmap(id,UXSTACKTOP-2*BY2PG);
-=======
 	va = ROUNDDOWN(va,BY2PG);
 	u_int perm = (*vpt)[VPN(va)]& 0xfff;
 	//writef("fork.c:pgfault():\t va:%x\n",va);
@@ -111,7 +98,6 @@ pgfault(u_int va)
 		if(syscall_mem_unmap(0,temp)<0){
 			user_panic("syscall_mem_unmap error.\n");
 		}
->>>>>>> lab4_test
 	}else{
 		user_panic("va page is not PTE_COW.\n");
 	}
@@ -154,10 +140,7 @@ duppage(u_int envid, u_int pn)
 	 * although we have debugged it for serveral weeks. If you face this
 	 * bug, we would like to say "Good luck. God bless."
 	 */
-	//writef("cd");
-	//writef("cd");
-	//writef("cd");
-	//writef("cd");
+	// writef("");
 	u_int perm;
 	perm = (*vpt)[pn] & 0xfff; //取出标记位
 	if(((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)){
@@ -223,7 +206,6 @@ fork(void)
 	}
 	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
 	syscall_set_env_status(newenvid,ENV_RUNNABLE);
-	//writef("newenvid is:%d,status is:%d\n",env->env_id,env->env_status);
 	return newenvid;
 }
 
