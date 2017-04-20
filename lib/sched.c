@@ -14,21 +14,17 @@
 //when occur next exception break,carry out this function again. 
 void sched_yield(void)
 {
-	static long position = -1;
-	int i;
-	for(i=0;i<NENV;i++){
-		position++;//we must carry this at head,because put it back will cause all env use same position
-		if(position==NENV){ //when it over limit range,then we reset it to the array head.
-			position = 0;
-		}
-		//if(envs[position].env_id == 4097){
-		//	envs[position].env_status = ENV_RUNNABLE;
+	static int pos = -1;
+	while(1){
+		pos = (pos+1)%NENV;
+		//if(envs[pos].env_id==4097){
+		//	printf("is:%d\n",ENV_RUNNABLE);
 		//}
-		if(envs[position].env_status == ENV_RUNNABLE){
-			env_run(&envs[position]);
-			return;
+		if(envs[pos].env_status==ENV_RUNNABLE){
+			env_run(&envs[pos]);
 		}
 	}
+
 }
 /*void sched_yield(void){
 	static int i = -1;

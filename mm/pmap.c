@@ -439,6 +439,7 @@ void
 tlb_invalidate(Pde *pgdir, u_long va)
 {
     if (curenv) {
+		//printf("curenv->id in tlb_invalidate:%d\n",curenv->env_id);
         tlb_out(PTE_ADDR(va) | GET_ENV_ASID(curenv->env_id));
     } else {
         tlb_out(PTE_ADDR(va));
@@ -576,6 +577,7 @@ void pageout(int va, int context)
         panic(">>>>>>>>>>>>>>>>>>>>>>it's env's zone");
     }
     if (va < 0x10000) {
+		printf("curenv->id:%d,va:%d,context:%x,status:%d\n",curenv->env_id,va,context,curenv->env_status);
         panic("^^^^^^TOO LOW^^^^^^^^^");
     }
 

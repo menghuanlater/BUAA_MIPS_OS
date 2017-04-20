@@ -143,18 +143,23 @@ duppage(u_int envid, u_int pn)
 	// writef("");
 	u_int perm;
 	perm = (*vpt)[pn] & 0xfff; //取出标记位
-	if(((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)){
+	if((((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)) && (perm & PTE_V)){
 		/*if(perm & PTE_LIBRARY){
 			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
 		}else{
 			perm = PTE_V | PTE_R;
 		}*/
-		perm = perm | PTE_V | PTE_R | PTE_COW;
+		if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm | PTE_COW)<0){
+			user_panic("syscall_mem_map for son failed.\n");
+		}
+		if(syscall_mem_map(0,pn*BY2PG,0,pn*BY2PG,perm | PTE_COW)<0){
+			user_panic("syscall_mem_map for father failed.\n");
+		}
+	}else{
+		if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm)<0){
+			user_panic("syscall_mem_map for son failed.1\n");
+		}
 	}
-	if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm)<0){
-		user_panic("failed page map in duppage.\n");
-	}
-
 	//user_panic("duppage not implemented");
 }
 
@@ -206,6 +211,7 @@ fork(void)
 	}
 	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
 	syscall_set_env_status(newenvid,ENV_RUNNABLE);
+	writef("OK! newenvid is:%d\n",newenvid);
 	return newenvid;
 }
 
