@@ -55,14 +55,20 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 void
 ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 {
-	int offset_begin = ;
-	int offset_end = ;
-	int offset = ;
+	int offset_begin = secno * 0x200;
+	int offset_end = offset_begin + nsecs * 0x200;
+	int offset = 0;
 	writef("diskno: %d\n", diskno);
-	while ( < ) {
+	while ( offset_begin + offset < offset_end ) {
+		//首先将要写入的数据写入设备缓冲区
+		user_bcopy(src+offset,(void *)0x93004000,0x200);
+		if(write_sector(diskno,offset_begin+offset)){
 		// copy data from source array to disk buffer.
-
-        // if error occur, then panic.
+			offset+=0x200;//偏移量自增
+		}else{
+        // if error occur, then panic.	
+			user_panic("disk I/O error\n");
+		}
 	}
 }
 

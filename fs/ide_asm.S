@@ -27,9 +27,12 @@ END(read_sector)
 
 // write
 LEAF(write_sector)
-	// select the IDE id.
-    // offset.
-
-    // start write.
-	// get status as return value.
+	sw a0,0x93000010// select the IDE id.
+    sw a1,0x93000000// offset.
+	li t0,1
+    sb t0,0x93000020// start write.
+	lw v0,0x93000030// get status as return value.
+	nop
+	jr ra
+	nop
 END(write_sector)

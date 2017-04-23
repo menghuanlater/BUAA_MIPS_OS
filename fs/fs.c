@@ -191,8 +191,17 @@ void
 free_block(u_int blockno)
 {
 	// Step 1: Check if the parameter `blockno` is valid (`blockno` can't be zero).
-
+	if(blockno<=0){
+		user_panic("in free_block the blockno must>0 but now the blockno is:%d\n",blockno);
+	}else{
 	// Step 2: Update the flag bit in bitmap.
+		if(super ==0 || blockno>= super->s_nblocks){	
+			return;
+		}
+		if(!(bitmap[blockno/32] & (1<<(blockno % 32)))){
+			bitmap[blockno/32] |= 1<<(blockno % 32);
+		}
+	}
 }
 
 // Overview:
