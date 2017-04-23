@@ -13,8 +13,12 @@ int block_is_free(u_int);
 //	Return the virtual address of this disk block. If the `blockno` is greater
 //	than disk's nblocks, panic.
 u_int
-diskaddr(u_int blockno)
-{
+diskaddr(u_int blockno){
+	if(blockno<0 || super==0 || blockno>=super->s_nblocks){
+		user_panic("in diskaddr the blockno is invalid.\n");
+	}else{
+		return DISKMAP + blockno*BY2SECT;
+	}
 }
 
 // Overview:
