@@ -128,8 +128,14 @@ int
 fsipc_remove(const char *path)
 {
 	// Step 1: decide if the path is valid.
-
+	if(strlen(path)>=MAXPATHLEN){
+		return -E_BAD_PATH;
+	}
 	// Step 2: Send request to fs server with IPC.
+	struct Fsreq_remove * req;
+	req = (struct Fsreq_remove *)fsipcbuf;
+	strcpy((char *)req->req_path,path);
+	return fsipc(FSREQ_REMOVE,req,0,0);
 }
 
 // Overview:
