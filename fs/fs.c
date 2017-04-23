@@ -69,8 +69,11 @@ int
 map_block(u_int blockno)
 {
 	// Step 1: Decide whether this block is already mapped to a page of physical memory.
-
+	if(block_is_mapped(blockno)){
+		return 0;
+	}
     // Step 2: Alloc a page of memory for this block via syscall.
+	return syscall_mem_alloc(syscall_getenvid(),diskaddr(blockno),PTE_V|PTE_R);
 }
 
 // Overview:
@@ -79,9 +82,15 @@ void
 unmap_block(u_int blockno)
 {
 	int r;
-
+	
 	// Step 1: check if this block is mapped.
-
+	if(block_is_mapped(blockno)){
+		if(block_is_dirty(blockno)){
+			write_block(blockno);
+		}
+		syscall_mem_unmap(syscall_getenvid(),diskaddr(blockno));
+		return;
+	}
 	// Step 2: if this block is used(not free) and dirty, it needs to be synced to disk,
 	// can't be unmap directly.
 
