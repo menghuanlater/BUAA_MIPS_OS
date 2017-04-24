@@ -406,6 +406,7 @@ void sys_ipc_recv(int sysno, u_int dstva)
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
 	curenv->env_status = ENV_NOT_RUNNABLE;
+	//printf("检测3 dstva:%x\n",dstva);
 	//do we need to use KERNEL_SP and TIMESTACK.
 	/*I think this situation we need not to frame copy,because we may not use KERNEL_SP!*/
 	sys_yield();
@@ -458,7 +459,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		printf("dst pot failed.\n");
 		return -E_INVAL;
 	}
-
+	//printf("检测2,srcva:%x\n",srcva);
 	/*if judge success*/
 	e->env_ipc_perm = perm;
 	e->env_ipc_recving = 0;

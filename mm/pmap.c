@@ -577,7 +577,6 @@ void pageout(int va, int context)
         panic(">>>>>>>>>>>>>>>>>>>>>>it's env's zone");
     }
     if (va < 0x10000) {
-		printf("curenv->id:%d,va:%d,context:%x,status:%d\n",curenv->env_id,va,context,curenv->env_status);
         panic("^^^^^^TOO LOW^^^^^^^^^");
     }
 

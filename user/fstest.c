@@ -15,7 +15,7 @@ void umain()
         }
         fdnum = r;
         writef("open is good\n");
-
+		//writef("to check the fdnum's legacy.fdnum is:%d\n",fdnum);
         if ((n = read(fdnum, buf, 511)) < 0) {
                 user_panic("read /newmotd: %d", r);
         }

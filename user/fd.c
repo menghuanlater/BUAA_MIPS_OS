@@ -201,7 +201,6 @@ read(int fdnum, void *buf, u_int n)
 		writef("Sorry,fdnum or dev_id is illegal.\n");
 		return r;
 	}
-	//writef("lalalaldscdcdc\n");
 	// Step 2: Check open mode.
 	if(fd->fd_omode & O_ACCMODE == O_WRONLY){
 		writef("this file is just for write,no read perm.\n");
@@ -209,15 +208,14 @@ read(int fdnum, void *buf, u_int n)
 	}
 	// Step 3: Read starting from seek position.
 	r = (*dev->dev_read)(fd,buf,n,fd->fd_offset);
-	//writef("hehehdadada\n");
+	//writef("2 fdnum:%d\n",fdnum);
 	// Step 4: Update seek position and set '\0' at the end of buf.
+	//writef("hahahaha:--- fdnum:%d,%s\n",fdnum,buf);
 	if(r>0){
-		//writef("the r is:%d\n",r);
-		//writef("我的offset is:%d\n",fd->fd_offset);
-		fd->fd_offset += r;
-		//writef("excuse me?\n");
+		writef("buf address is:%x\n",buf);
 		char * temp = (char *)buf;
 		*(temp + r) = '\0';
+		//fd->fd_offset = fd->fd_offset + r;
 	}
 	//writef("we are family. r :%d\n",r);
 	return r;

@@ -435,9 +435,10 @@ env_run(struct Env *e)
 	lcontext(KADDR(curenv->env_cr3));	
     /*Step 4: Use env_pop_tf() to restore the environment's
      * environment   registers and drop into user mode in the
-     * the   environment.
+     * the environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
-
+	//printf("current env id:%d\n",curenv->env_id);
+	//printf("检测2 in env_run\n");
 	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
 }

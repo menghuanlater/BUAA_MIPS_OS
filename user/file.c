@@ -129,7 +129,7 @@ file_read(struct Fd *fd, void *buf, u_int n, u_int offset)
 	if (offset + n > size) {
 		n = size - offset;
 	}
-
+	//writef("now the offset is:%d\n",offset);
 	user_bcopy((char *)fd2data(fd) + offset, buf, n);
 	return n;
 }

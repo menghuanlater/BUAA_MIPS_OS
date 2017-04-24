@@ -73,6 +73,7 @@ map_block(u_int blockno)
 		return 0;
 	}
     // Step 2: Alloc a page of memory for this block via syscall.
+	//writef("in map block envid is:%d\n",syscall_getenvid());
 	return syscall_mem_alloc(0,diskaddr(blockno),PTE_V|PTE_R);
 }
 
@@ -85,7 +86,7 @@ unmap_block(u_int blockno)
 	
 	// Step 1: check if this block is mapped.
 	if(block_is_mapped(blockno)){
-		if(!block_is_free(blockno) || block_is_dirty(blockno)){
+		if((!block_is_free(blockno)) && block_is_dirty(blockno)){
 			write_block(blockno);
 		}
 		syscall_mem_unmap(0,diskaddr(blockno));
@@ -211,9 +212,8 @@ free_block(u_int blockno)
 		if(super ==0 || blockno>= super->s_nblocks){	
 			return;
 		}
-		if(!(bitmap[blockno/32] & (1<<(blockno % 32)))){
-			bitmap[blockno/32] |= 1<<(blockno % 32);
-		}
+		//writef("ncsajkcnsjdkcnsdjkcnsdjkcjsdncjs\n");
+		bitmap[blockno/32] = bitmap[blockno/32] | (1<<(blockno % 32));
 	}
 }
 
@@ -553,7 +553,7 @@ dir_lookup(struct File *dir, char *name, struct File **file)
 		// Step 3: Find target file by file name in all files on this block.
 		// If we find the target file, set the result to *file and set f_dir field.
 		for(j=0;j<FILE2BLK;j++){
-			if(strcmp(f[j].f_name,name)==0){
+			if(strcmp((char *)f[j].f_name,name)==0){
 				*file = &f[j];
 				f[j].f_dir = dir;
 				return 0;
