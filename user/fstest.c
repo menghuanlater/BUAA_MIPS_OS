@@ -9,7 +9,7 @@ void umain()
         int fdnum;
         char buf[512];
         int n;
-
+		//writef("haha\n");
         if ((r = open("/newmotd", O_RDWR)) < 0) {
                 user_panic("open /newmotd: %d", r);
         }

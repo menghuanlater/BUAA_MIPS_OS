@@ -192,18 +192,34 @@ err:
 int
 read(int fdnum, void *buf, u_int n)
 {
-	int r;
+	int r = 0;
 	struct Dev *dev;
 	struct Fd *fd;
 
 	// Step 1: Get fd and dev.
-
+	if((r=fd_lookup(fdnum,&fd))<0 || (r=dev_lookup(fd->fd_dev_id,&dev))<0){
+		writef("Sorry,fdnum or dev_id is illegal.\n");
+		return r;
+	}
+	//writef("lalalaldscdcdc\n");
 	// Step 2: Check open mode.
-
+	if(fd->fd_omode & O_ACCMODE == O_WRONLY){
+		writef("this file is just for write,no read perm.\n");
+		return -E_INVAL;
+	}
 	// Step 3: Read starting from seek position.
-
+	r = (*dev->dev_read)(fd,buf,n,fd->fd_offset);
+	//writef("hehehdadada\n");
 	// Step 4: Update seek position and set '\0' at the end of buf.
-
+	if(r>0){
+		//writef("the r is:%d\n",r);
+		//writef("我的offset is:%d\n",fd->fd_offset);
+		fd->fd_offset += r;
+		//writef("excuse me?\n");
+		char * temp = (char *)buf;
+		*(temp + r) = '\0';
+	}
+	//writef("we are family. r :%d\n",r);
 	return r;
 }
 

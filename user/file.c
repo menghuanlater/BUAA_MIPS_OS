@@ -36,22 +36,35 @@ open(const char *path, int mode)
 
 	// Step 1: Alloc a new Fd, return error code when fail to alloc.
 	// Hint: Please use fd_alloc.
-
+	if((r=fd_alloc(&fd))<0){
+		writef("alloc a fd in file_open failed.\n");
+		return r;
+	}	
 
 	// Step 2: Get the file descriptor of the file to open.
-
+	if((r=fsipc_open(path,mode,fd))<0){
+		writef("can't get the fd.\n");
+		return r;
+	}
 
 	// Step 3: Set the start address storing the file's content. Set size and fileid correctly.
 	// Hint: Use fd2data to get the start address.
-
-
+	va = fd2data(fd);
+	ffd = (struct Filefd *)fd;
+	size = ffd->f_file.f_size;
+	fileid = ffd->f_fileid;
 	// Step 4: Map the file content into memory.
-
+	//一个磁盘块存储的文件大小是4KB--->BY2PG/BY2BLK
+	for(i=0;i<size/BY2BLK;i++){
+		if((r=fsipc_map(fileid,i*BY2BLK,va+i*BY2BLK))<0){
+			writef("Sorry,file open failed because failing map content.\n");
+			return r;
+		}
+	}
 
 	// Step 5: Return file descriptor.
 	// Hint: Use fd2num.
-
-	
+	return fd2num(fd);
 }
 
 // Overview:
@@ -252,6 +265,7 @@ int
 remove(const char *path)
 {
 	// Your code here.
+	return fsipc_remove(path);
 }
 
 // Overview:

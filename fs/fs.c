@@ -14,10 +14,10 @@ int block_is_free(u_int);
 //	than disk's nblocks, panic.
 u_int
 diskaddr(u_int blockno){
-	if(blockno<0 || super==0 || blockno>=super->s_nblocks){
-		user_panic("in diskaddr the blockno is invalid.\n");
+	if(blockno<0 || (super!=0 && blockno>=super->s_nblocks)){
+		user_panic("in diskaddr the blockno or super is invalid.\n");
 	}else{
-		return DISKMAP + blockno*BY2SECT;
+		return DISKMAP + blockno*BY2BLK;
 	}
 }
 
@@ -73,7 +73,7 @@ map_block(u_int blockno)
 		return 0;
 	}
     // Step 2: Alloc a page of memory for this block via syscall.
-	return syscall_mem_alloc(syscall_getenvid(),diskaddr(blockno),PTE_V|PTE_R);
+	return syscall_mem_alloc(0,diskaddr(blockno),PTE_V|PTE_R);
 }
 
 // Overview:
@@ -85,15 +85,14 @@ unmap_block(u_int blockno)
 	
 	// Step 1: check if this block is mapped.
 	if(block_is_mapped(blockno)){
-		if(block_is_dirty(blockno)){
+		if(!block_is_free(blockno) || block_is_dirty(blockno)){
 			write_block(blockno);
 		}
-		syscall_mem_unmap(syscall_getenvid(),diskaddr(blockno));
+		syscall_mem_unmap(0,diskaddr(blockno));
 		return;
 	}
 	// Step 2: if this block is used(not free) and dirty, it needs to be synced to disk,
 	// can't be unmap directly.
-
 	// Step 3: use `syscall_mem_unmap` to unmap corresponding virtual memory.
 
 	// Step 4: validate result of this unmap operation.
@@ -122,6 +121,7 @@ read_block(u_int blockno, void **blk, u_int *isnew)
 
 	// Step 1: validate blockno. Make file the block to read is within the disk.
 	if (super && blockno >= super->s_nblocks) {
+		//writef("super:%d,blockno:%d,super->s_nblocks:%d\n",super,blockno,super->s_nblocks);
 		user_panic("reading non-existent block %08x\n", blockno);
 	}
 
@@ -555,6 +555,7 @@ dir_lookup(struct File *dir, char *name, struct File **file)
 		for(j=0;j<FILE2BLK;j++){
 			if(strcmp(f[j].f_name,name)==0){
 				*file = &f[j];
+				f[j].f_dir = dir;
 				return 0;
 			}
 		}

@@ -202,12 +202,16 @@ void
 serve_remove(u_int envid, struct Fsreq_remove *rq)
 {
 	int r;
-	u_char path[MAXPATHLEN];
+	u_char path[MAXPATHLEN] = {'\0'};
 
 	// Step 1: Copy in the path, making sure it's terminated.
-
+	user_bcopy(rq->req_path,path,strlen(rq->req_path));
 	// Step 2: Remove file from file system and response to user-level process.
-
+	if((r=file_remove(path))<0){
+		writef("remove is failed.\n");
+		ipc_send(envid,r,0,0);//when failed, send r to request env
+	}
+	ipc_send(envid,0,0,0);//success,send 0 to request env
 }
 
 void
