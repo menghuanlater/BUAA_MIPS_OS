@@ -106,7 +106,7 @@ serve_open(u_int envid, struct Fsreq_open *rq)
 	// Copy in the path, making sure it's null-terminated
 	user_bcopy(rq->req_path, path, MAXPATHLEN);
 	path[MAXPATHLEN - 1] = 0;
-
+	//writef("3:filepath:%s\n",path);
 	// Find a file id.
 	if ((r = open_alloc(&o)) < 0) {
 		user_panic("open_alloc failed: %d, invalid path: %s", r, path);
@@ -202,10 +202,11 @@ void
 serve_remove(u_int envid, struct Fsreq_remove *rq)
 {
 	int r;
-	u_char path[MAXPATHLEN] = {'\0'};
+	u_char path[MAXPATHLEN];
 
 	// Step 1: Copy in the path, making sure it's terminated.
-	user_bcopy(rq->req_path,path,strlen(rq->req_path));
+	user_bcopy(rq->req_path,path,MAXPATHLEN);
+	path[MAXPATHLEN - 1] = 0;
 	// Step 2: Remove file from file system and response to user-level process.
 	if((r=file_remove(path))<0){
 		writef("remove is failed.\n");
@@ -258,7 +259,6 @@ serve(void)
 			writef("Invalid request from %08x: no argument page\n", whom);
 			continue; // just leave it hanging, waiting for the next request.
 		}
-
 		switch (req) {
 			case FSREQ_OPEN:
 				serve_open(whom, (struct Fsreq_open *)REQVA);
@@ -309,7 +309,6 @@ umain(void)
 	serve_init();
 	fs_init();
 	fs_test();
-
 	serve();
 }
 

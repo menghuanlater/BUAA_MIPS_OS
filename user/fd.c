@@ -192,7 +192,7 @@ err:
 int
 read(int fdnum, void *buf, u_int n)
 {
-	int r = 0;
+	int r;
 	struct Dev *dev;
 	struct Fd *fd;
 
@@ -202,20 +202,21 @@ read(int fdnum, void *buf, u_int n)
 		return r;
 	}
 	// Step 2: Check open mode.
-	if(fd->fd_omode & O_ACCMODE == O_WRONLY){
+	if((fd->fd_omode & O_ACCMODE) == O_WRONLY){
 		writef("this file is just for write,no read perm.\n");
 		return -E_INVAL;
 	}
 	// Step 3: Read starting from seek position.
 	r = (*dev->dev_read)(fd,buf,n,fd->fd_offset);
-	//writef("2 fdnum:%d\n",fdnum);
+	//writef("2 fdnum:%d\n",fd2num(fd));
+	writef("fd:%x,fd->fd_offset:%x\n",fd,&(fd->fd_offset));
 	// Step 4: Update seek position and set '\0' at the end of buf.
 	//writef("hahahaha:--- fdnum:%d,%s\n",fdnum,buf);
 	if(r>0){
-		writef("buf address is:%x\n",buf);
+		//writef("buf address is:%x\n",buf);
 		char * temp = (char *)buf;
 		*(temp + r) = '\0';
-		//fd->fd_offset = fd->fd_offset + r;
+		seek(fdnum,fd->fd_offset+r);
 	}
 	//writef("we are family. r :%d\n",r);
 	return r;
@@ -279,7 +280,6 @@ seek(int fdnum, u_int offset)
 	if ((r = fd_lookup(fdnum, &fd)) < 0) {
 		return r;
 	}
-
 	fd->fd_offset = offset;
 	return 0;
 }

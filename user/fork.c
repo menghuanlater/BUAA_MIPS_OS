@@ -19,10 +19,8 @@
 void user_bcopy(const void *src, void *dst, size_t len)
 {
 	void *max;
-
 	//	writef("~~~~~~~~~~~~~~~~ src:%x dst:%x len:%x\n",(int)src,(int)dst,len);
 	max = dst + len;
-
 	// copy machine words while possible
 	if (((int)src % 4 == 0) && ((int)dst % 4 == 0)) {
 		while (dst + 3 < max) {
@@ -38,7 +36,6 @@ void user_bcopy(const void *src, void *dst, size_t len)
 		dst += 1;
 		src += 1;
 	}
-
 	//for(;;);
 }
 

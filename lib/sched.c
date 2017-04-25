@@ -17,9 +17,9 @@ void sched_yield(void)
 	static int pos = -1;
 	while(1){
 		pos = (pos+1)%NENV;
-		//if(envs[pos].env_id==4097){
-		//	printf("is:%d\n",ENV_RUNNABLE);
-		//}
+		/*if(pos==0){
+			printf("is:%d\n",envs[pos].env_status);
+		}*/
 		if(envs[pos].env_status==ENV_RUNNABLE){
 			env_run(&envs[pos]);
 		}

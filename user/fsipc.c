@@ -40,7 +40,6 @@ fsipc_open(const char *path, u_int omode, struct Fd *fd)
 {
 	u_int perm;
 	struct Fsreq_open *req;
-
 	req = (struct Fsreq_open *)fsipcbuf;
 
 	// The path is too long.

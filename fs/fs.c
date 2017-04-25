@@ -74,7 +74,7 @@ map_block(u_int blockno)
 	}
     // Step 2: Alloc a page of memory for this block via syscall.
 	//writef("in map block envid is:%d\n",syscall_getenvid());
-	return syscall_mem_alloc(0,diskaddr(blockno),PTE_V|PTE_R);
+	return syscall_mem_alloc(0,diskaddr(blockno),PTE_V|PTE_R|PTE_LIBRARY);
 }
 
 // Overview:
@@ -83,7 +83,6 @@ void
 unmap_block(u_int blockno)
 {
 	int r;
-	
 	// Step 1: check if this block is mapped.
 	if(block_is_mapped(blockno)){
 		if((!block_is_free(blockno)) && block_is_dirty(blockno)){
