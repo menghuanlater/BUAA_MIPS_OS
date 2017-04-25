@@ -216,12 +216,12 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 		return -E_INVAL;
 	}
 	//third we judge whether srcenv exist.
-	if(envid2env(srcid,&srcenv,PTE_V)<0){
+	if(envid2env(srcid,&srcenv,0)<0){
 		printf("Sorry,we can't get srcenv!\n");
 		return -E_BAD_ENV;
 	}
 	//forth we judge whether dstenv exist.
-	if(envid2env(dstid,&dstenv,PTE_V)<0){
+	if(envid2env(dstid,&dstenv,0)<0){
 		printf("Sorry,we can't get dstenv!\n");
 		return -E_BAD_ENV;
 	}
@@ -453,8 +453,8 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		return -E_IPC_NOT_RECV;
 	}
 	if((p=page_lookup(curenv->env_pgdir,srcva,0))<=0){
-		printf("send srcva is not exist.srcva is:%x\n",srcva,srcva);
-	}else if(page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm<0)){
+		printf("send srcva is not exist.srcva is:%x\n",srcva);
+	}else if(page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm)<0){
 		printf("dst pot failed.\n");
 		return -E_INVAL;
 	}

@@ -39,8 +39,14 @@ open(const char *path, int mode)
 		writef("alloc a fd in file_open failed.\n");
 		return r;
 	}
-	//syscall_mem_alloc(0,fd,PTE_R|PTE_V);
-	//syscall_mem_map(0,fd,0,fd,PTE_V|PTE_R);
+	/*if((r=syscall_mem_alloc(0,fd,PTE_R|PTE_V|PTE_LIBRARY))<0){
+		writef("Sad Sad.\n");
+		return r;
+	}
+	if((r=syscall_mem_map(0,fd,0,fd,PTE_V|PTE_R|PTE_LIBRARY))<0){
+		writef("Sad.\n");
+		return r;
+	}*/
 	// Step 2: Get the file descriptor of the file to open.
 	if((r=fsipc_open(path,mode,fd))<0){
 		writef("can't get the fd.\n");
@@ -236,7 +242,7 @@ ftruncate(int fdnum, u_int size)
 	f = (struct Filefd *)fd;
 	fileid = f->f_fileid;
 	oldsize = f->f_file.f_size;
-	//f->f_file.f_size = size;
+	f->f_file.f_size = size;
 	if ((r = fsipc_set_size(fileid, size)) < 0) {
 		return r;
 	}

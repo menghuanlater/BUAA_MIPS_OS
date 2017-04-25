@@ -195,12 +195,12 @@ read(int fdnum, void *buf, u_int n)
 	int r;
 	struct Dev *dev;
 	struct Fd *fd;
-
 	// Step 1: Get fd and dev.
 	if((r=fd_lookup(fdnum,&fd))<0 || (r=dev_lookup(fd->fd_dev_id,&dev))<0){
 		writef("Sorry,fdnum or dev_id is illegal.\n");
 		return r;
 	}
+	//writef("devid:%d\n",fd->fd_dev_id);
 	// Step 2: Check open mode.
 	if((fd->fd_omode & O_ACCMODE) == O_WRONLY){
 		writef("this file is just for write,no read perm.\n");
@@ -219,7 +219,7 @@ read(int fdnum, void *buf, u_int n)
 		//writef("fd address is:%x\n",&fd);
 		//writef("current env id is:%d\n",syscall_getenvid());
 		*(char *)(buf + r) = 0;
-		//fd->fd_offset += r;
+		fd->fd_offset += r;
 	}
 	//writef("we are family. r :%d\n",r);
 	return r;
@@ -268,7 +268,7 @@ write(int fdnum, const void *buf, u_int n)
 	r = (*dev->dev_write)(fd, buf, n, fd->fd_offset+43);
 
 	if (r > 0) {
-		//fd->fd_offset += r;
+		fd->fd_offset += r;
 	}
 
 	return r;
@@ -283,7 +283,7 @@ seek(int fdnum, u_int offset)
 	if ((r = fd_lookup(fdnum, &fd)) < 0) {
 		return r;
 	}
-	//fd->fd_offset = offset;
+	fd->fd_offset = offset;
 	return 0;
 }
 
