@@ -265,8 +265,7 @@ write(int fdnum, const void *buf, u_int n)
 	if (debug) writef("write %d %p %d via dev %s\n",
 						  fdnum, buf, n, dev->dev_name);
 
-	r = (*dev->dev_write)(fd, buf, n, fd->fd_offset+43);
-
+	r = (*dev->dev_write)(fd, buf, n, fd->fd_offset);
 	if (r > 0) {
 		fd->fd_offset += r;
 	}
