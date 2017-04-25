@@ -233,7 +233,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	u_long i;
 	int r;
 	u_long offset = va - ROUNDDOWN(va, BY2PG);
-	printf("the va:%x,the bin_size:%d,the sgsize:%d\n",va,bin_size,sgsize);
+	//printf("the va:%x,the bin_size:%d,the sgsize:%d\n",va,bin_size,sgsize);
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
@@ -440,7 +440,8 @@ env_run(struct Env *e)
      * the environment.
      */
     /* Hint: You should use GET_ENV_ASID there.Think why? */
-	//printf("current env id:%d\n",curenv->env_id);
+	//printf("检测current env id:%d\n",curenv->env_id);
 	//printf("检测2 in env_run\n");
 	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
+	//printf("检测,current env:%d\n",curenv->env_id);
 }

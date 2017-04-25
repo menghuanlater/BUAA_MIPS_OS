@@ -436,7 +436,6 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	struct Env *e;
 	struct Page *p;
 	Pte *ppte;
-	perm = perm;
 	if(srcva<0){
 		printf("in sys_ipc_can_send found va is 0\n");
 		return -E_IPC_NOT_RECV;
@@ -461,7 +460,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	}
 	//printf("检测2,srcva:%x\n",srcva);
 	/*if judge success*/
-	e->env_ipc_perm = perm;
+	e->env_ipc_perm = perm|PTE_V|PTE_R;
 	e->env_ipc_recving = 0;
 	e->env_status = ENV_RUNNABLE;
 	e->env_ipc_value = value;

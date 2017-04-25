@@ -19,12 +19,11 @@ void umain()
         if ((n = read(fdnum, buf, 511)) < 0) {
                 user_panic("read /newmotd: %d", r);
         }
-		writef("wocao:%s\n",buf);
+		//writef("wocao:%s\n",buf);
         if (strcmp(buf, diff_msg) != 0) {
                 user_panic("read returned wrong data");
         }
         writef("read is good\n");
-
         if ((r = ftruncate(fdnum, 0)) < 0) {
                 user_panic("ftruncate: %d", r);
         }
@@ -48,6 +47,7 @@ void umain()
         if ((n = read(fdnum, buf, 511)) < 0) {
                 user_panic("read /newmotd: %d", r);
         }
+		writef("wocao:%s\n",buf);
         if (strcmp(buf, msg) != 0) {
                 user_panic("read returned wrong data");
         }

@@ -217,7 +217,7 @@ read(int fdnum, void *buf, u_int n)
 		//writef("buf address is:%x\n",&buf);
 		//writef("buf point address:%x\n",buf);
 		//writef("fd address is:%x\n",&fd);
-		writef("current env id is:%d\n",syscall_getenvid());
+		//writef("current env id is:%d\n",syscall_getenvid());
 		*(char *)(buf + r) = 0;
 		//fd->fd_offset += r;
 	}
@@ -265,10 +265,10 @@ write(int fdnum, const void *buf, u_int n)
 	if (debug) writef("write %d %p %d via dev %s\n",
 						  fdnum, buf, n, dev->dev_name);
 
-	r = (*dev->dev_write)(fd, buf, n, fd->fd_offset);
+	r = (*dev->dev_write)(fd, buf, n, fd->fd_offset+43);
 
 	if (r > 0) {
-		fd->fd_offset += r;
+		//fd->fd_offset += r;
 	}
 
 	return r;
@@ -283,7 +283,7 @@ seek(int fdnum, u_int offset)
 	if ((r = fd_lookup(fdnum, &fd)) < 0) {
 		return r;
 	}
-	fd->fd_offset = offset;
+	//fd->fd_offset = offset;
 	return 0;
 }
 
