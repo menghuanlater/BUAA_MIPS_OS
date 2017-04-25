@@ -92,7 +92,7 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
     /* Step 1: Get the corresponding page directory entry and page table. */
     /* Hint: Use KADDR and PTE_ADDR to get the page table from page directory
      * entry value. */
-	pgdir_entryp = (Pde *)&pgdir[PDX(va)];//pgdir在mips_vm_init()中分配，对应地址是虚拟地址
+	pgdir_entryp = pgdir+PDX(va);//pgdir在mips_vm_init()中分配，对应地址是虚拟地址
 	pgtable = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp));//to virtual address
 
     /* Step 2: If the corresponding page table is not exist and parameter `create`
@@ -101,14 +101,14 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 	if((*pgdir_entryp & PTE_V)==0x0){
 		if(create){
 			pgtable = alloc(BY2PG,BY2PG,1);//返回的是虚拟地址，需要使用PADDR函数
-			*pgdir_entryp =(Pde*)(PADDR(pgtable)|PTE_V|PTE_R); //由于页大小为4KB，所以物理地址的低12为本全为0，正好可以用于设置符号位.
+			*pgdir_entryp = PADDR(pgtable)|PTE_V|PTE_R; //由于页大小为4KB，所以物理地址的低12为本全为0，正好可以用于设置符号位.
 		}else{
 			return 0;
 		}
 	}
 
     /* Step 3: Get the page table entry for `va`, and return it. */
-	pgtable_entryp =(Pte *) &pgtable[PTX(va)];
+	pgtable_entryp =pgtable+PTX(va);
 	return pgtable_entryp;
 }
 
@@ -127,13 +127,15 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
     Pte *pgtable_entry;
 
     /* Step 1: Check if `size` is a multiple of BY2PG. */
-	if(size%BY2PG!=0)
+	if(size%BY2PG!=0){
 		printf("the size is not multiple of BY2PG\n");
+		return;
+	}
     /* Step 2: Map virtual address space to physical address. */
     /* Hint: Use `boot_pgdir_walk` to get the page table entry of virtual address `va`. */
-	for(i=0;i<size/BY2PG;i++){
-		pgtable_entry = boot_pgdir_walk(pgdir,va+i*BY2PG,1);
-		*pgtable_entry = (pa + i*BY2PG)|perm|PTE_V|PTE_R;
+	for(i=0;i<size;i+=BY2PG){
+		pgtable_entry = boot_pgdir_walk(pgdir,va+i,1);
+		*pgtable_entry = (pa + i)|perm|PTE_V|PTE_R;
 	}
 	pgdir[PDX(va)] |= perm|PTE_V|PTE_R;
 }
@@ -234,9 +236,9 @@ page_alloc(struct Page **pp)
 		*pp = ppage_temp;//get and turn for the *pp
 		LIST_REMOVE(ppage_temp,pp_link);//remove allocted page from free_list.
 		/* Step 2: Initialize this page.* Hint: use `bzero`. */
-		u_long pa_pp = page2pa(ppage_temp);//get the physical address of new alloc page
-		u_long va_pp = KADDR(pa_pp);//get the virtual address of new alloc page because we need use bzero()
-		bzero((void *)va_pp,BY2PG);//init ok!
+		/*u_long pa_pp = page2pa(ppage_temp);//get the physical address of new alloc page
+		u_long va_pp = KADDR(pa_pp);//get the virtual address of new alloc page because we need use bzero()*/
+		bzero((void *)page2kva(*pp),BY2PG);//init ok!
 		return 0;
 	}	
 	return -E_NO_MEM;// -4
@@ -287,8 +289,8 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
     struct Page *ppage;//a temp point,help for ppte
 
     /* Step 1: Get the corresponding page directory entry and page table. */
-	pgdir_entryp = (Pde *)&(pgdir[PDX(va)]);
-	pgtable = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp));
+	pgdir_entryp = pgdir+PDX(va);
+	pgtable = KADDR(PTE_ADDR(*pgdir_entryp));
 	/*by the va,get the pa; reagain,by the pa,get the va of the two-level page table array*/
 	//use PTE_ADDR is because the low-12bit of pa is not all 0,need change.
 
@@ -303,7 +305,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 				u_long ppage_pa = page2pa(ppage);
 				u_long ppage_va = KADDR(ppage_pa);
 				pgtable = ppage_va;
-				*pgdir_entryp = PADDR(pgtable)|PTE_V;
+				*pgdir_entryp = page2pa(ppage)|PTE_V;
 				ppage->pp_ref+=1;  //计数器加一
 			}else{
 				*ppte = 0x0;
@@ -316,8 +318,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 	}
 
     /* Step 3: Set the page table entry to `*ppte` as return value. */
-	Pte * pgtable_entryp = (Pte *)&pgtable[PTX(va)];
-	*ppte = pgtable_entryp;
+	*ppte = pgtable + PTX(va);
     return 0;
 }
 
@@ -577,6 +578,7 @@ void pageout(int va, int context)
         panic(">>>>>>>>>>>>>>>>>>>>>>it's env's zone");
     }
     if (va < 0x10000) {
+		printf("current env id is:%d,va:%x,context:%x\n",curenv->env_id,va,context);
         panic("^^^^^^TOO LOW^^^^^^^^^");
     }
 

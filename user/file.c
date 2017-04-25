@@ -54,12 +54,12 @@ open(const char *path, int mode)
 	fileid = ffd->f_fileid;
 	// Step 4: Map the file content into memory.
 	//一个磁盘块存储的文件大小是4KB--->BY2PG/BY2BLK
-	for(i=0;i<size/BY2BLK;i++){
-		if((r=syscall_mem_alloc(0,va+i*BY2BLK,PTE_R))<0){
+	for(i=0;i<size;i+=BY2BLK){
+		if((r=syscall_mem_alloc(0,va+i,PTE_R|PTE_V))<0){
 			writef("Sorry,you can't alloc a page.\n");
 			return r;
 		}
-		if((r=fsipc_map(fileid,i*BY2BLK,va+i*BY2BLK))<0){
+		if((r=fsipc_map(fileid,i,va+i))<0){
 			writef("Sorry,file open failed because failing map content.\n");
 			return r;
 		}

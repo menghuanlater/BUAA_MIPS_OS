@@ -288,7 +288,7 @@ int sys_env_alloc(void)
 	}
 	e->env_status = ENV_NOT_RUNNABLE;
 	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
-	/*Pte *ppte;
+	Pte *ppte;
 	u_int i;
 	for(i=UTEXT;i<UTOP-2*BY2PG;i+=BY2PG){
 		ppte = 0;
@@ -303,7 +303,7 @@ int sys_env_alloc(void)
 				}
 			}
 		}
-	}*/
+	}
 	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;

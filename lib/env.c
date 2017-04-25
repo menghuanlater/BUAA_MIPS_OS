@@ -233,6 +233,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	u_long i;
 	int r;
 	u_long offset = va - ROUNDDOWN(va, BY2PG);
+	printf("the va:%x,the bin_size:%d,the sgsize:%d\n",va,bin_size,sgsize);
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
@@ -254,6 +255,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	}
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
+	//i = ROUND(bin_size,BY2PG);
 	while (i < sgsize) {
 		if(page_alloc(&p)<0){
 			printf("Sorry,alloc page failed!\n");

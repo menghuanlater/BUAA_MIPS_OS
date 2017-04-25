@@ -9,7 +9,7 @@ void umain()
         int fdnum;
         char buf[512];
         int n;
-		//writef("haha\n");
+		//writef("&buf:%x,buf:%x\n",&buf,buf);
         if ((r = open("/newmotd", O_RDWR)) < 0) {
                 user_panic("open /newmotd: %d", r);
         }
@@ -19,6 +19,7 @@ void umain()
         if ((n = read(fdnum, buf, 511)) < 0) {
                 user_panic("read /newmotd: %d", r);
         }
+		writef("wocao:%s\n",buf);
         if (strcmp(buf, diff_msg) != 0) {
                 user_panic("read returned wrong data");
         }
