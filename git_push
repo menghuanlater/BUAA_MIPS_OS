@@ -1,3 +1,0 @@
-make clean
-git add --all
-git commit -a -m 15061134

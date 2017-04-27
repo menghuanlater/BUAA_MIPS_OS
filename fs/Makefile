@@ -19,6 +19,8 @@ USERLIB := ../user/printf.o \
 		../user/pageref.o \
 		../user/file.o \
 		../user/fsipc.o \
+		../user/wait.o \
+		../user/spawn.o \
 		../user/pipe.o \
 		../user/console.o \
 		../user/fprintf.o
@@ -28,7 +30,15 @@ FSLIB :=	fs.o \
 		ide_asm.o \
 		test.o
 
-FSIMGFILES := motd newmotd
+FSIMGFILES := 	motd \
+			newmotd \
+			../user/testfdsharing.b \
+			../user/testarg.b \
+			../user/init.b \
+			../user/sh.b \
+			../user/cat.b \
+			../user/ls.b
+
 
 CFLAGS += -nostdlib -static
 
@@ -41,7 +51,6 @@ all: serv.x fs.img serv.b
 %.b.c: %.b
 	echo create $@
 	echo bintoc $* $< > $@~
-	chmod +x ./bintoc
 	./bintoc $* $< > $@~ && mv -f $@~ $@
 #	grep \. $@
 	
@@ -62,13 +71,11 @@ all: serv.x fs.img serv.b
 
 fs.img: $(FSIMGFILES)
 	dd if=/dev/zero of=../gxemul/fs.img bs=4096 count=1024 2>/dev/null
-	gcc $(INCLUDES) fsformat.c -o fsformat -m32
-	chmod +x ./fsformat
 	./fsformat ../gxemul/fs.img $(FSIMGFILES)
 
 .PHONY: clean
 
 clean:
-	rm -rf *~ *.o *.b.c *.b *.x
+	rm -rf *~ *.o *.b.c *.x
 
 include ../include.mk

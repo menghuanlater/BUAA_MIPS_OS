@@ -1,0 +1,367 @@
+
+syscall_lib.o:     file format elf32-tradbigmips
+
+Disassembly of section .text:
+
+00000000 <syscall_putchar>:
+   0:	27bdffe0 	addiu	sp,sp,-32
+   4:	afbf0018 	sw	ra,24(sp)
+   8:	00042e00 	sll	a1,a0,0x18
+   c:	00052e03 	sra	a1,a1,0x18
+  10:	afa00010 	sw	zero,16(sp)
+  14:	afa00014 	sw	zero,20(sp)
+  18:	24042537 	li	a0,9527
+  1c:	00003021 	move	a2,zero
+  20:	0c000000 	jal	0 <syscall_putchar>
+  24:	00003821 	move	a3,zero
+  28:	8fbf0018 	lw	ra,24(sp)
+  2c:	03e00008 	jr	ra
+  30:	27bd0020 	addiu	sp,sp,32
+
+00000034 <syscall_getenvid>:
+  34:	27bdffe0 	addiu	sp,sp,-32
+  38:	afbf0018 	sw	ra,24(sp)
+  3c:	afa00010 	sw	zero,16(sp)
+  40:	afa00014 	sw	zero,20(sp)
+  44:	24042538 	li	a0,9528
+  48:	00002821 	move	a1,zero
+  4c:	00003021 	move	a2,zero
+  50:	0c000000 	jal	0 <syscall_putchar>
+  54:	00003821 	move	a3,zero
+  58:	8fbf0018 	lw	ra,24(sp)
+  5c:	03e00008 	jr	ra
+  60:	27bd0020 	addiu	sp,sp,32
+
+00000064 <syscall_yield>:
+  64:	27bdffe0 	addiu	sp,sp,-32
+  68:	afbf0018 	sw	ra,24(sp)
+  6c:	afa00010 	sw	zero,16(sp)
+  70:	afa00014 	sw	zero,20(sp)
+  74:	24042539 	li	a0,9529
+  78:	00002821 	move	a1,zero
+  7c:	00003021 	move	a2,zero
+  80:	0c000000 	jal	0 <syscall_putchar>
+  84:	00003821 	move	a3,zero
+  88:	8fbf0018 	lw	ra,24(sp)
+  8c:	03e00008 	jr	ra
+  90:	27bd0020 	addiu	sp,sp,32
+
+00000094 <syscall_env_destroy>:
+  94:	27bdffe0 	addiu	sp,sp,-32
+  98:	afbf0018 	sw	ra,24(sp)
+  9c:	00802821 	move	a1,a0
+  a0:	afa00010 	sw	zero,16(sp)
+  a4:	afa00014 	sw	zero,20(sp)
+  a8:	2404253a 	li	a0,9530
+  ac:	00003021 	move	a2,zero
+  b0:	0c000000 	jal	0 <syscall_putchar>
+  b4:	00003821 	move	a3,zero
+  b8:	8fbf0018 	lw	ra,24(sp)
+  bc:	03e00008 	jr	ra
+  c0:	27bd0020 	addiu	sp,sp,32
+
+000000c4 <syscall_set_pgfault_handler>:
+  c4:	27bdffe0 	addiu	sp,sp,-32
+  c8:	afbf0018 	sw	ra,24(sp)
+  cc:	00801021 	move	v0,a0
+  d0:	00a01821 	move	v1,a1
+  d4:	00c03821 	move	a3,a2
+  d8:	afa00010 	sw	zero,16(sp)
+  dc:	afa00014 	sw	zero,20(sp)
+  e0:	2404253b 	li	a0,9531
+  e4:	00402821 	move	a1,v0
+  e8:	0c000000 	jal	0 <syscall_putchar>
+  ec:	00603021 	move	a2,v1
+  f0:	8fbf0018 	lw	ra,24(sp)
+  f4:	03e00008 	jr	ra
+  f8:	27bd0020 	addiu	sp,sp,32
+
+000000fc <syscall_mem_alloc>:
+  fc:	27bdffe0 	addiu	sp,sp,-32
+ 100:	afbf0018 	sw	ra,24(sp)
+ 104:	00801021 	move	v0,a0
+ 108:	00a01821 	move	v1,a1
+ 10c:	00c03821 	move	a3,a2
+ 110:	afa00010 	sw	zero,16(sp)
+ 114:	afa00014 	sw	zero,20(sp)
+ 118:	2404253c 	li	a0,9532
+ 11c:	00402821 	move	a1,v0
+ 120:	0c000000 	jal	0 <syscall_putchar>
+ 124:	00603021 	move	a2,v1
+ 128:	8fbf0018 	lw	ra,24(sp)
+ 12c:	03e00008 	jr	ra
+ 130:	27bd0020 	addiu	sp,sp,32
+
+00000134 <syscall_mem_map>:
+ 134:	27bdffe0 	addiu	sp,sp,-32
+ 138:	afbf0018 	sw	ra,24(sp)
+ 13c:	00801821 	move	v1,a0
+ 140:	00a04021 	move	t0,a1
+ 144:	00c04821 	move	t1,a2
+ 148:	afa70010 	sw	a3,16(sp)
+ 14c:	8fa20030 	lw	v0,48(sp)
+ 150:	afa20014 	sw	v0,20(sp)
+ 154:	2404253d 	li	a0,9533
+ 158:	00602821 	move	a1,v1
+ 15c:	01003021 	move	a2,t0
+ 160:	0c000000 	jal	0 <syscall_putchar>
+ 164:	01203821 	move	a3,t1
+ 168:	8fbf0018 	lw	ra,24(sp)
+ 16c:	03e00008 	jr	ra
+ 170:	27bd0020 	addiu	sp,sp,32
+
+00000174 <syscall_mem_unmap>:
+ 174:	27bdffe0 	addiu	sp,sp,-32
+ 178:	afbf0018 	sw	ra,24(sp)
+ 17c:	00801021 	move	v0,a0
+ 180:	00a03021 	move	a2,a1
+ 184:	afa00010 	sw	zero,16(sp)
+ 188:	afa00014 	sw	zero,20(sp)
+ 18c:	2404253e 	li	a0,9534
+ 190:	00402821 	move	a1,v0
+ 194:	0c000000 	jal	0 <syscall_putchar>
+ 198:	00003821 	move	a3,zero
+ 19c:	8fbf0018 	lw	ra,24(sp)
+ 1a0:	03e00008 	jr	ra
+ 1a4:	27bd0020 	addiu	sp,sp,32
+
+000001a8 <syscall_env_alloc>:
+ 1a8:	27bdffe0 	addiu	sp,sp,-32
+ 1ac:	afbf001c 	sw	ra,28(sp)
+ 1b0:	afb00018 	sw	s0,24(sp)
+ 1b4:	afa00010 	sw	zero,16(sp)
+ 1b8:	afa00014 	sw	zero,20(sp)
+ 1bc:	2404253f 	li	a0,9535
+ 1c0:	00002821 	move	a1,zero
+ 1c4:	00003021 	move	a2,zero
+ 1c8:	0c000000 	jal	0 <syscall_putchar>
+ 1cc:	00003821 	move	a3,zero
+ 1d0:	00408021 	move	s0,v0
+ 1d4:	3c040000 	lui	a0,0x0
+ 1d8:	0c000000 	jal	0 <syscall_putchar>
+ 1dc:	24840000 	addiu	a0,a0,0
+ 1e0:	02001021 	move	v0,s0
+ 1e4:	8fbf001c 	lw	ra,28(sp)
+ 1e8:	8fb00018 	lw	s0,24(sp)
+ 1ec:	03e00008 	jr	ra
+ 1f0:	27bd0020 	addiu	sp,sp,32
+
+000001f4 <syscall_set_env_status>:
+ 1f4:	27bdffe0 	addiu	sp,sp,-32
+ 1f8:	afbf0018 	sw	ra,24(sp)
+ 1fc:	00801021 	move	v0,a0
+ 200:	00a03021 	move	a2,a1
+ 204:	afa00010 	sw	zero,16(sp)
+ 208:	afa00014 	sw	zero,20(sp)
+ 20c:	24042540 	li	a0,9536
+ 210:	00402821 	move	a1,v0
+ 214:	0c000000 	jal	0 <syscall_putchar>
+ 218:	00003821 	move	a3,zero
+ 21c:	8fbf0018 	lw	ra,24(sp)
+ 220:	03e00008 	jr	ra
+ 224:	27bd0020 	addiu	sp,sp,32
+
+00000228 <syscall_set_trapframe>:
+ 228:	27bdffe0 	addiu	sp,sp,-32
+ 22c:	afbf0018 	sw	ra,24(sp)
+ 230:	00801021 	move	v0,a0
+ 234:	00a03021 	move	a2,a1
+ 238:	afa00010 	sw	zero,16(sp)
+ 23c:	afa00014 	sw	zero,20(sp)
+ 240:	24042541 	li	a0,9537
+ 244:	00402821 	move	a1,v0
+ 248:	0c000000 	jal	0 <syscall_putchar>
+ 24c:	00003821 	move	a3,zero
+ 250:	8fbf0018 	lw	ra,24(sp)
+ 254:	03e00008 	jr	ra
+ 258:	27bd0020 	addiu	sp,sp,32
+
+0000025c <syscall_panic>:
+ 25c:	27bdffe0 	addiu	sp,sp,-32
+ 260:	afbf0018 	sw	ra,24(sp)
+ 264:	00802821 	move	a1,a0
+ 268:	afa00010 	sw	zero,16(sp)
+ 26c:	afa00014 	sw	zero,20(sp)
+ 270:	24042542 	li	a0,9538
+ 274:	00003021 	move	a2,zero
+ 278:	0c000000 	jal	0 <syscall_putchar>
+ 27c:	00003821 	move	a3,zero
+ 280:	8fbf0018 	lw	ra,24(sp)
+ 284:	03e00008 	jr	ra
+ 288:	27bd0020 	addiu	sp,sp,32
+
+0000028c <syscall_ipc_can_send>:
+ 28c:	27bdffe0 	addiu	sp,sp,-32
+ 290:	afbf0018 	sw	ra,24(sp)
+ 294:	00801021 	move	v0,a0
+ 298:	00a01821 	move	v1,a1
+ 29c:	00c04021 	move	t0,a2
+ 2a0:	afa70010 	sw	a3,16(sp)
+ 2a4:	afa00014 	sw	zero,20(sp)
+ 2a8:	24042543 	li	a0,9539
+ 2ac:	00402821 	move	a1,v0
+ 2b0:	00603021 	move	a2,v1
+ 2b4:	0c000000 	jal	0 <syscall_putchar>
+ 2b8:	01003821 	move	a3,t0
+ 2bc:	8fbf0018 	lw	ra,24(sp)
+ 2c0:	03e00008 	jr	ra
+ 2c4:	27bd0020 	addiu	sp,sp,32
+
+000002c8 <syscall_ipc_recv>:
+ 2c8:	27bdffe0 	addiu	sp,sp,-32
+ 2cc:	afbf0018 	sw	ra,24(sp)
+ 2d0:	00802821 	move	a1,a0
+ 2d4:	afa00010 	sw	zero,16(sp)
+ 2d8:	afa00014 	sw	zero,20(sp)
+ 2dc:	24042544 	li	a0,9540
+ 2e0:	00003021 	move	a2,zero
+ 2e4:	0c000000 	jal	0 <syscall_putchar>
+ 2e8:	00003821 	move	a3,zero
+ 2ec:	8fbf0018 	lw	ra,24(sp)
+ 2f0:	03e00008 	jr	ra
+ 2f4:	27bd0020 	addiu	sp,sp,32
+
+000002f8 <syscall_cgetc>:
+ 2f8:	27bdffe0 	addiu	sp,sp,-32
+ 2fc:	afbf0018 	sw	ra,24(sp)
+ 300:	afa00010 	sw	zero,16(sp)
+ 304:	afa00014 	sw	zero,20(sp)
+ 308:	24042545 	li	a0,9541
+ 30c:	00002821 	move	a1,zero
+ 310:	00003021 	move	a2,zero
+ 314:	0c000000 	jal	0 <syscall_putchar>
+ 318:	00003821 	move	a3,zero
+ 31c:	8fbf0018 	lw	ra,24(sp)
+ 320:	03e00008 	jr	ra
+ 324:	27bd0020 	addiu	sp,sp,32
+	...
+Disassembly of section .reginfo:
+
+00000000 <.reginfo>:
+   0:	a00103fc 	sb	at,1020(zero)
+	...
+Disassembly of section .pdr:
+
+00000000 <.pdr>:
+   0:	00000000 	nop
+   4:	80000000 	lb	zero,0(zero)
+   8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  14:	00000020 	add	zero,zero,zero
+  18:	0000001d 	0x1d
+  1c:	0000001f 	0x1f
+  20:	00000000 	nop
+  24:	80000000 	lb	zero,0(zero)
+  28:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  34:	00000020 	add	zero,zero,zero
+  38:	0000001d 	0x1d
+  3c:	0000001f 	0x1f
+  40:	00000000 	nop
+  44:	80000000 	lb	zero,0(zero)
+  48:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  54:	00000020 	add	zero,zero,zero
+  58:	0000001d 	0x1d
+  5c:	0000001f 	0x1f
+  60:	00000000 	nop
+  64:	80000000 	lb	zero,0(zero)
+  68:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  74:	00000020 	add	zero,zero,zero
+  78:	0000001d 	0x1d
+  7c:	0000001f 	0x1f
+  80:	00000000 	nop
+  84:	80000000 	lb	zero,0(zero)
+  88:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  94:	00000020 	add	zero,zero,zero
+  98:	0000001d 	0x1d
+  9c:	0000001f 	0x1f
+  a0:	00000000 	nop
+  a4:	80000000 	lb	zero,0(zero)
+  a8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  b4:	00000020 	add	zero,zero,zero
+  b8:	0000001d 	0x1d
+  bc:	0000001f 	0x1f
+  c0:	00000000 	nop
+  c4:	80000000 	lb	zero,0(zero)
+  c8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  d4:	00000020 	add	zero,zero,zero
+  d8:	0000001d 	0x1d
+  dc:	0000001f 	0x1f
+  e0:	00000000 	nop
+  e4:	80000000 	lb	zero,0(zero)
+  e8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+  f4:	00000020 	add	zero,zero,zero
+  f8:	0000001d 	0x1d
+  fc:	0000001f 	0x1f
+ 100:	00000000 	nop
+ 104:	80010000 	lb	at,0(zero)
+ 108:	fffffffc 	sdc3	$31,-4(ra)
+	...
+ 114:	00000020 	add	zero,zero,zero
+ 118:	0000001d 	0x1d
+ 11c:	0000001f 	0x1f
+ 120:	00000000 	nop
+ 124:	80000000 	lb	zero,0(zero)
+ 128:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 134:	00000020 	add	zero,zero,zero
+ 138:	0000001d 	0x1d
+ 13c:	0000001f 	0x1f
+ 140:	00000000 	nop
+ 144:	80000000 	lb	zero,0(zero)
+ 148:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 154:	00000020 	add	zero,zero,zero
+ 158:	0000001d 	0x1d
+ 15c:	0000001f 	0x1f
+ 160:	00000000 	nop
+ 164:	80000000 	lb	zero,0(zero)
+ 168:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 174:	00000020 	add	zero,zero,zero
+ 178:	0000001d 	0x1d
+ 17c:	0000001f 	0x1f
+ 180:	00000000 	nop
+ 184:	80000000 	lb	zero,0(zero)
+ 188:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 194:	00000020 	add	zero,zero,zero
+ 198:	0000001d 	0x1d
+ 19c:	0000001f 	0x1f
+ 1a0:	00000000 	nop
+ 1a4:	80000000 	lb	zero,0(zero)
+ 1a8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 1b4:	00000020 	add	zero,zero,zero
+ 1b8:	0000001d 	0x1d
+ 1bc:	0000001f 	0x1f
+ 1c0:	00000000 	nop
+ 1c4:	80000000 	lb	zero,0(zero)
+ 1c8:	fffffff8 	sdc3	$31,-8(ra)
+	...
+ 1d4:	00000020 	add	zero,zero,zero
+ 1d8:	0000001d 	0x1d
+ 1dc:	0000001f 	0x1f
+Disassembly of section .rodata.str1.4:
+
+00000000 <$LC0>:
+   0:	00000000 	nop
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	00474343 	0x474343
+   4:	3a202847 	xori	zero,s1,0x2847
+   8:	4e552920 	c3	0x552920
+   c:	342e302e 	ori	t6,at,0x302e
+  10:	30202844 	andi	zero,at,0x2844
+  14:	454e5820 	0x454e5820
+  18:	454c444b 	0x454c444b
+  1c:	20342e31 	addi	s4,at,11825
+  20:	20342e30 	addi	s4,at,11824
+  24:	2e302900 	sltiu	s0,s1,10496
