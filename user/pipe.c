@@ -85,9 +85,16 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
 	// everybody left is what fd is.  So the other end of
 	// the pipe is closed.
 	int pfd,pfp,runs;
-	
-
-
+	//使用do while循环进行判断进程是否发生切换
+	do{
+		pfd = pageref(fd);	
+		pfp = pageref(pfp);
+		runs = env->env_runs;
+	}while(runs!=env->env_runs); //如果不等,则表明进程发生了切换
+	if(pfd == pfp)
+		return 1;
+	else
+		return 0;
 
 //	panic("_pipeisclosed not implemented");
 //	return 0;
@@ -117,11 +124,32 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	// some bytes, return what you have instead of yielding.)
 	// If the pipe is empty and closed and you didn't copy any data out, return 0.
 	// Use _pipeisclosed to check whether the pipe is closed.
-	int i;
+	int i = 0;
 	struct Pipe *p;
 	char *rbuf;
-	
-
+	if(n==0) return 0;//读取的字节为0,直接返回
+	p = (struct Pipe *)fd2data(fd);
+	rbuf = (char *)vbuf;//void*转char*
+	//offset 意思是在当前读取的rpos基础上增加offset偏移
+	/*如果我们刚执行这函数,什么字节都没读取,我们应该调度其他进程,
+	 *但是，需要用循环判断,如果读取了>=1个字节,则就算没读取到n个字节，也要返回
+	*/
+	p->p_rpos += offset;
+	while(p->p_rpos>=p->p_wpos){
+		if(_pipeisclosed(fd,p)){
+			writef("no data read,we found the write process exit.\n");
+			return 0;
+		}else{
+			syscall_yield();
+		}
+	}
+	while((i<n) && p->p_rpos<p->p_wpos){
+		user_bcopy(&(p->p_buf[p->p_rpos%BY2PIPE]),rbuf,1);
+		p->p_rpos++;
+		rbuf++;
+		i++;
+	}
+	return i;
 
 //	panic("piperead not implemented");
 //	return -E_INVAL;
@@ -137,18 +165,29 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	// the data, wait for the pipe to empty and then keep copying.
 	// If the pipe is full and closed, return 0.
 	// Use _pipeisclosed to check whether the pipe is closed.
-	int i;
-	struct Pipe *p;
-	char *wbuf;
-	
-
-
-	
-	//	return n;
+	int i = 0;
+	struct Pipe *p = (struct Pipe *)fd2data(fd);
+	char *wbuf = (char *)vbuf;
+	if(n==0) return 0;
+	p->p_wpos += offset;
+	while((p->p_wpos - p->p_rpos)>=BY2PIPE){
+		if(_pipeisclosed(fd,p)){
+			writef("no data write,we found the read process is closed.\n");
+			return 0;
+		}else{
+			syscall_yield();
 		}
+	}
+	while((i<n) && (p->p_wpos - p->p_rpos)< BY2PIPE){
+		user_bcopy(wbuf,&(p->p_buf[p->p_wpos]),1);
+		p->p_wpos++;
+		i++;
+		wbuf++;
+	}
+	return i;
+	//	return n;
 //	panic("pipewrite not implemented");
 //	return -E_INVAL;
-	return n;
 }
 
 static int
@@ -163,6 +202,7 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
+	syscall_mem_unmap(0,fd);
 	syscall_mem_unmap(0, fd2data(fd));
 	return 0;
 }

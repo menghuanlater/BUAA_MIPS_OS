@@ -110,7 +110,7 @@ fd2num(struct Fd *fd)
 int
 num2fd(int fd)
 {
-	return fd*BY2PG+FDTABLE;
+	return fd*BY2PG+FDTABLE;
 }
 
 int
@@ -137,6 +137,7 @@ close_all(void)
 		close(i);
 }
 
+/*复制文件描述符*/
 int
 dup(int oldfdnum, int newfdnum)
 {
@@ -146,6 +147,7 @@ dup(int oldfdnum, int newfdnum)
 	//writef("dup comes 1;\n");
 	if ((r = fd_lookup(oldfdnum, &oldfd)) < 0)
 		return r;
+	//may be there will occur env argue.
 	close(newfdnum);
 	//writef("dup comes 2;\n");
 	newfd = (struct Fd*)INDEX2FD(newfdnum);
