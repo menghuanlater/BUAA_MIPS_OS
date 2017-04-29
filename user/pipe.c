@@ -144,10 +144,12 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 		}
 	}
 	while((i<n) && p->p_rpos<p->p_wpos){
-		user_bcopy(&(p->p_buf[p->p_rpos%BY2PIPE]),rbuf,1);
+		//user_bcopy(&(p->p_buf[p->p_rpos%BY2PIPE]),rbuf,1);
+		rbuf[i] = p->p_buf[p->p_rpos%BY2PIPE];
 		p->p_rpos++;
-		rbuf++;
+		//rbuf++;
 		i++;
+		writef("p_.p_rpos:%d\n",p->p_rpos);
 	}
 	return i;
 
@@ -178,12 +180,22 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 			syscall_yield();
 		}
 	}
-	while((i<n) && (p->p_wpos - p->p_rpos)< BY2PIPE){
-		user_bcopy(wbuf,&(p->p_buf[p->p_wpos]),1);
+	while(i<n){
+		//user_bcopy(wbuf,&(p->p_buf[p->p_wpos%BY2PIPE]),1);
+		p->p_buf[p->p_wpos%BY2PIPE] = wbuf[i];
 		p->p_wpos++;
 		i++;
-		wbuf++;
+		//wbuf++;
+		//判断缓冲区是否被写满,写满则通知读者去读缓冲区
+		if(i>=n){
+			break;
+		}else{
+			while(p->p_wpos - p->p_rpos >= BY2PIPE){
+				syscall_yield();
+			}
+		}
 	}
+	writef("success write length:%d,but the n is:%d,offset is:%d\n",i,n,offset);
 	return i;
 	//	return n;
 //	panic("pipewrite not implemented");
@@ -202,7 +214,7 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
-	syscall_mem_unmap(0,fd);
+	//syscall_mem_unmap(0,fd);
 	syscall_mem_unmap(0, fd2data(fd));
 	return 0;
 }

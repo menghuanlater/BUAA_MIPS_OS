@@ -25,7 +25,7 @@ void mips_init()
 		ENV_CREATE(user_B);
 		printf("OK,envA and envB create success!\n");
 	*/
-	ENV_CREATE(user_fstest);
+	ENV_CREATE(user_testpipe);
 	ENV_CREATE(fs_serv);
 	trap_init();
 	kclock_init();

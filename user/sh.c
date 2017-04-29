@@ -114,11 +114,10 @@ again:
 		//	user_panic("< redirection not implemented");
 			break;
 		case '>':
-			
-
-
-
-
+			if(gettoken(0,&t)!='w'){
+				writef("syntax error: < not followed by word\n");
+				exit();
+			}
 		//	writef("%s \n",t);
 			fdnum = open(t,O_RDWR);
 			dup(fdnum,1);
@@ -128,13 +127,6 @@ again:
 //			user_panic("> redirection not implemented");
 			break;
 		case '|':
-			
-
-
-
-
-
-				
 			// Your code here.
 			// 	First, allocate a pipe.
 			//	Then fork.
@@ -151,6 +143,27 @@ again:
 			//		goto runit, to execute this piece of the pipeline
 			//			and then wait for the right side to finish
 		//	user_panic("| not implemented");
+			if(pipe(p)<0){
+				writef("can't create a pipe.\n");
+				exit();
+			}
+			r = fork();//创建子进程
+			if(r<0){
+				writef("failed to create son [rocess.\n");
+				exit();
+			}
+			if(r==0){ //子进程
+				dup(p[0],0);
+				close(p[0]);
+				close(p[1]);
+				goto again;
+			}else{//父进程
+				dup(p[1],1);
+				close(p[1]);
+				close(p[0]);
+				rightpipe = r;//r是fork返回子进程id
+				goto runit;
+			}
 			break;
 		}
 	}

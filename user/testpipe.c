@@ -36,8 +36,9 @@ umain(void)
 			user_panic("write: %e", i);
 		close(p[1]);
 	}
+	writef("check 1\n");
 	wait(pid);
-
+	writef("check 2\n");
 	if ((i=pipe(p)) < 0)
 		user_panic("pipe: %e", i);
 
