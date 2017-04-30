@@ -5,9 +5,7 @@ void umain()
 {
 	int a = 0;
 	int id = 0;
-
 	if ((id = fork()) == 0) {
-		writef("fork?!!!!!!!!!\n");
 		if ((id = fork()) == 0) {
 			a += 3;
 			for (;;) {
