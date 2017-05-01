@@ -440,4 +440,5 @@ env_run(struct Env *e)
     /* Hint: You should use GET_ENV_ASID there.Think why? */
 
 	env_pop_tf(&(curenv->env_tf),GET_ENV_ASID(curenv->env_id));
+	//printf("haha\n");
 }
