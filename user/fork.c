@@ -141,11 +141,11 @@ duppage(u_int envid, u_int pn)
 	u_int perm;
 	perm = (*vpt)[pn] & 0xfff; //取出标记位
 	if((((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)) && (perm & PTE_V)){
-		/*if(perm & PTE_LIBRARY){
-			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
+		if(perm & PTE_LIBRARY){
+			perm = PTE_V | PTE_R | PTE_LIBRARY;
 		}else{
-			perm = PTE_V | PTE_R;
-		}*/
+			perm = PTE_V | PTE_R | PTE_COW;
+		}
 		if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm | PTE_COW)<0){
 			user_panic("syscall_mem_map for son failed.\n");
 		}

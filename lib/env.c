@@ -435,7 +435,7 @@ env_run(struct Env *e)
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
 	curenv->env_runs ++;
-	printf("what the runs:%d\n",curenv->env_runs);
+	//printf("what the runs:%d\n",curenv->env_runs);
     /*Step 3: Use lcontext() to switch to its address space. */
 	lcontext(KADDR(curenv->env_cr3));	
     /*Step 4: Use env_pop_tf() to restore the environment's

@@ -87,9 +87,9 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
 	int pfd,pfp,runs;
 	//使用do while循环进行判断进程是否发生切换
 	do{
-		pfd = pageref(fd);	
-		pfp = pageref(pfp);
+		pfd = pageref(fd);
 		runs = env->env_runs;
+		pfp = pageref(p);
 	}while(runs!=env->env_runs); //如果不等,则表明进程发生了切换
 	if(pfd == pfp)
 		return 1;
@@ -134,7 +134,7 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	/*如果我们刚执行这函数,什么字节都没读取,我们应该调度其他进程,
 	 *但是，需要用循环判断,如果读取了>=1个字节,则就算没读取到n个字节，也要返回
 	*/
-	p->p_rpos += offset;
+	writef("address in read:%x\n",p);
 	while(p->p_rpos>=p->p_wpos){
 		if(_pipeisclosed(fd,p)){
 			writef("no data read,we found the write process exit.\n");
@@ -149,7 +149,6 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 		p->p_rpos++;
 		//rbuf++;
 		i++;
-		writef("p_.p_rpos:%d\n",p->p_rpos);
 	}
 	return i;
 
@@ -172,6 +171,7 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	char *wbuf = (char *)vbuf;
 	if(n==0) return 0;
 	p->p_wpos += offset;
+	writef("address in write:%x\n",p);
 	while((p->p_wpos - p->p_rpos)>=BY2PIPE){
 		if(_pipeisclosed(fd,p)){
 			writef("no data write,we found the read process is closed.\n");
@@ -194,6 +194,7 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 				syscall_yield();
 			}
 		}
+		//writef("in write i:%d\n",i);
 	}
 	writef("success write length:%d,but the n is:%d,offset is:%d\n",i,n,offset);
 	return i;
@@ -206,9 +207,12 @@ static int
 pipestat(struct Fd *fd, struct Stat *stat)
 {
 	struct Pipe *p;
-
-	
-
+	p = (struct Pipe *)fd2data(fd);
+	strcpy(stat->st_name,"<pipe>");
+	stat->st_size = p->p_wpos - p->p_rpos;
+	stat->st_isdir = 0;
+	stat->st_dev = &devpipe;
+	return 0;
 }
 
 static int

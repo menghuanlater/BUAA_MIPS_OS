@@ -34,6 +34,7 @@ umain(void)
 		writef("[%08x] pipereadeof write %d\n", env->env_id, p[1]);
 		if ((i=write(p[1], msg, strlen(msg))) != strlen(msg))
 			user_panic("write: %e", i);
+		writef("check 3\n");
 		close(p[1]);
 	}
 	writef("check 1\n");
