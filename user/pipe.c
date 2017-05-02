@@ -187,12 +187,8 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 		i++;
 		//wbuf++;
 		//判断缓冲区是否被写满,写满则通知读者去读缓冲区
-		if(i>=n){
-			break;
-		}else{
-			while(p->p_wpos - p->p_rpos >= BY2PIPE){
-				syscall_yield();
-			}
+		while(i<n && (p->p_wpos - p->p_rpos >= BY2PIPE)){
+			syscall_yield();
 		}
 		//writef("in write i:%d\n",i);
 	}
