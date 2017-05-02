@@ -18,8 +18,8 @@ void sched_yield(void)
 	static int p_flag = 0;
 	while(1){
 		if(p_flag){
-			env_run(&envs[position]);
 			p_flag = 0;
+			env_run(&envs[position]);
 			break;
 		}
 		position++;//we must carry this at head,because put it back will cause all env use same position
@@ -29,8 +29,8 @@ void sched_yield(void)
 		if(envs[position].env_status == ENV_RUNNABLE){
 			if(position==1){
 				p_flag = 1;
-				env_run(&envs[position]);
 			}
+			env_run(&envs[position]);
 		}
 	}
 }
