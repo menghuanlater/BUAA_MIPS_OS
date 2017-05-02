@@ -156,7 +156,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	// Your code here.
 	struct Env *env;
 	struct Page *ppage;
-    if(envid2env(envid,&env,PTE_V)<0){
+    if(envid2env(envid,&env,0)<0){
 		printf("Sorry,you can't get the env by the given env_id.\n");
 		return -E_BAD_ENV;
 	}

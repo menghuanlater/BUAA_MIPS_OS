@@ -31,7 +31,6 @@ pipe(int pfd[2])
 {
 	int r, va;
 	struct Fd *fd0, *fd1;
-
 	// allocate the file descriptor table entries
 	if ((r = fd_alloc(&fd0)) < 0
 	||  (r = syscall_mem_alloc(0, (u_int)fd0, PTE_V|PTE_R|PTE_LIBRARY)) < 0)
@@ -40,7 +39,7 @@ pipe(int pfd[2])
 	if ((r = fd_alloc(&fd1)) < 0
 	||  (r = syscall_mem_alloc(0, (u_int)fd1, PTE_V|PTE_R|PTE_LIBRARY)) < 0)
 		goto err1;
-
+	//writef("%x :%x\n",fd0,fd1);
 	// allocate the pipe structure as first data page in both
 	va = fd2data(fd0);
 	if ((r = syscall_mem_alloc(0, va, PTE_V|PTE_R|PTE_LIBRARY)) < 0)
@@ -134,7 +133,7 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	/*如果我们刚执行这函数,什么字节都没读取,我们应该调度其他进程,
 	 *但是，需要用循环判断,如果读取了>=1个字节,则就算没读取到n个字节，也要返回
 	*/
-	writef("address in read:%x\n",p);
+	writef("address in read:%x\n",&p);
 	while(p->p_rpos>=p->p_wpos){
 		if(_pipeisclosed(fd,p)){
 			writef("no data read,we found the write process exit.\n");
@@ -171,7 +170,7 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	char *wbuf = (char *)vbuf;
 	if(n==0) return 0;
 	p->p_wpos += offset;
-	writef("address in write:%x\n",p);
+	writef("address in write:%x\n",&p);
 	while((p->p_wpos - p->p_rpos)>=BY2PIPE){
 		if(_pipeisclosed(fd,p)){
 			writef("no data write,we found the read process is closed.\n");
