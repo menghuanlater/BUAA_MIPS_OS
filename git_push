@@ -1,0 +1,4 @@
+cd 15061134-lab
+make clean
+git add --all
+git commit -a -m 15061134
