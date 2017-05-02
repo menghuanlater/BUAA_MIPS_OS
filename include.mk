@@ -2,7 +2,7 @@
 # Best Wishes
 # Copyright (C) 2007 Beihang University
 # Written By Zhu Like ( zlike@cse.buaa.edu.cn )
-
+#
 
 CROSS_COMPILE := /OSLAB/compiler/usr/bin/mips_4KC-
 CC			  := $(CROSS_COMPILE)gcc
