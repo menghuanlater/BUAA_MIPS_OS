@@ -101,10 +101,10 @@ int spawn(char *prog, char **argv)
 		int r;
 		int size;
 		u_int esp;
-
+		//writef("check 3_4\n");
 		if((fd = open(prog, O_RDWR/*O_ACCMODE*/))<0)
 			user_panic("spawn:open %s:%e",prog,fd);
-
+		//writef("check 3_3\n");
 		u_int child_envid;
 		child_envid = syscall_env_alloc();
 		if(child_envid < 0)
@@ -112,10 +112,10 @@ int spawn(char *prog, char **argv)
 			writef("spawn:alloc the new env is wrong\n");
 			return child_envid;
 		}
-
-	init_stack(child_envid, argv,&esp);
-
-	size = ((struct Filefd*)num2fd(fd))->f_file.f_size;
+		//writef("check 3_1\n");
+		init_stack(child_envid, argv,&esp);
+		//writef("check 3_2\n");	
+		size = ((struct Filefd*)num2fd(fd))->f_file.f_size;
 
 		
 		u_int i;

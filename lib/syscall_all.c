@@ -288,7 +288,7 @@ int sys_env_alloc(void)
 	}
 	e->env_status = ENV_NOT_RUNNABLE;
 	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
-	Pte *ppte;
+	/*Pte *ppte;
 	u_int i;
 	for(i=UTEXT;i<UTOP-2*BY2PG;i+=BY2PG){
 		ppte = 0;
@@ -303,7 +303,7 @@ int sys_env_alloc(void)
 				}
 			}
 		}
-	}
+	}*/
 	e->env_tf.pc = e->env_tf.cp0_epc;//need return curenv
 	//to set $v0 to 0 as return value for son env
 	e->env_tf.regs[2] = 0;
@@ -453,7 +453,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		return -E_IPC_NOT_RECV;
 	}
 	if((p=page_lookup(curenv->env_pgdir,srcva,0))<=0){
-		printf("send srcva is not exist.srcva is:%x\n",srcva);
+		//printf("send srcva is not exist.srcva is:%x\n",srcva);
 	}else if(page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm)<0){
 		printf("dst pot failed.\n");
 		return -E_INVAL;
