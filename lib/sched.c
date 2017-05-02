@@ -23,7 +23,7 @@ void sched_yield(void)
 			break;
 		}
 		position++;//we must carry this at head,because put it back will cause all env use same position
-		if(position==NENV){ //when it over limit range,then we reset it to the array head.
+		if(position>=2){ //when it over limit range,then we reset it to the array head.
 			position = 0;
 		}
 		if(envs[position].env_status == ENV_RUNNABLE){
