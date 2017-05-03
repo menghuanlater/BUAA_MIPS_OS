@@ -58,6 +58,7 @@ pipe(int pfd[2])
 
 	pfd[0] = fd2num(fd0);
 	pfd[1] = fd2num(fd1);
+	//writef("the two fd is:%d %d\n",fd2num(fd0),fd2num(fd1));
 	return 0;
 
 err3:	syscall_mem_unmap(0, va);

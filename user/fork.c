@@ -146,10 +146,10 @@ duppage(u_int envid, u_int pn)
 		}else{
 			perm = PTE_V | PTE_R | PTE_COW;
 		}
-		if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm | PTE_COW)<0){
+		if(syscall_mem_map(0,pn*BY2PG,envid,pn*BY2PG,perm)<0){
 			user_panic("syscall_mem_map for son failed.\n");
 		}
-		if(syscall_mem_map(0,pn*BY2PG,0,pn*BY2PG,perm | PTE_COW)<0){
+		if(syscall_mem_map(0,pn*BY2PG,0,pn*BY2PG,perm)<0){
 			user_panic("syscall_mem_map for father failed.\n");
 		}
 	}else{

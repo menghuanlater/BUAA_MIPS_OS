@@ -166,8 +166,8 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	}
 	ppage->pp_ref++;
 	//first we need to judge whether va has mapped a page,if true,carry out page_remove
-	Pte *ppte;
-	/*if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
+	/*Pte *ppte;
+	if(page_lookup(env->env_pgdir,va,&ppte)!=NULL){
 		page_remove(env->env_pgdir,va);
 	}*/
 	if(page_insert(env->env_pgdir,ppage,va,perm)<0){

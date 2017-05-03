@@ -51,6 +51,7 @@ fd_alloc(struct Fd **fd)
 //writef("enter fd_alloc\n");	
 	for(fdno = 0;fdno < MAXFD - 1;fdno++)
 	{
+		//writef("now we goto fdno is:%d\n",fdno);
 		va = INDEX2FD(fdno);
 		if(((* vpd)[va/PDMAP] & PTE_V)==0)
 		{
@@ -198,6 +199,7 @@ read(int fdnum, void *buf, u_int n)
 	if (r >= 0)
 		fd->fd_offset += r;
 	//writef("read() come 4 %x\n",(int)env);
+	//writef("read() sum read out :%d\n",r);
 	return r;
 }
 
