@@ -21,7 +21,7 @@ int
 sum(char *s, int n)
 {
 	int i, tot;
-
+	//writef("exec. %s\n",s);
 	tot = 0;
 	for(i=0; i<n; i++)
 		tot ^= MY_MUL(i,s[i]);
@@ -36,6 +36,7 @@ umain(int argc, char **argv)
 	writef("init: running\n");
 
 	want = 0xf989e;
+	//writef("the judge size:%d\n",sizeof data);
 	if ((x=sum((char*)&data, sizeof data)) != want)
 		writef("init: data is not initialized: got sum %08x wanted %08x\n",
 			x, want);
