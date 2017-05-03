@@ -63,7 +63,7 @@ umain(int argc, char **argv)
 	if ((r = dup(0, 1)) < 0)
 		user_panic("dup: %d", r);
 
-write(1,"LALA",4);
+//write(1,"LALA",4);
 
 	for (;;) {
 		writef("init: starting sh\n");
