@@ -134,7 +134,7 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	/*如果我们刚执行这函数,什么字节都没读取,我们应该调度其他进程,
 	 *但是，需要用循环判断,如果读取了>=1个字节,则就算没读取到n个字节，也要返回
 	*/
-	writef("address in read:%x\n",&p);
+	//writef("address in read:%x\n",&p);
 	while(p->p_rpos>=p->p_wpos){
 		if(_pipeisclosed(fd,p)){
 			writef("no data read,we found the write process exit.\n");
@@ -170,8 +170,8 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	struct Pipe *p = (struct Pipe *)fd2data(fd);
 	char *wbuf = (char *)vbuf;
 	if(n==0) return 0;
-	p->p_wpos += offset;
-	writef("address in write:%x\n",&p);
+	//p->p_wpos += offset;
+	//writef("address in write:%x\n",&p);
 	while((p->p_wpos - p->p_rpos)>=BY2PIPE){
 		if(_pipeisclosed(fd,p)){
 			writef("no data write,we found the read process is closed.\n");
@@ -192,7 +192,7 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 		}
 		//writef("in write i:%d\n",i);
 	}
-	writef("success write length:%d,but the n is:%d,offset is:%d\n",i,n,offset);
+	//writef("success write length:%d,but the n is:%d,offset is:%d\n",i,n,offset);
 	return i;
 	//	return n;
 //	panic("pipewrite not implemented");
@@ -214,7 +214,7 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
-	//syscall_mem_unmap(0,fd);
+	syscall_mem_unmap(0,fd);
 	syscall_mem_unmap(0, fd2data(fd));
 	return 0;
 }
