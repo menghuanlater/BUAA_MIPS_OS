@@ -20,6 +20,8 @@ void sched_yield(void)
 		/*if(pos==0){
 			printf("is:%d\n",envs[pos].env_status);
 		}*/
+		/*if(pos>=6)
+			pos = 0;*/
 		if(envs[pos].env_status==ENV_RUNNABLE){
 			env_run(&envs[pos]);
 		}

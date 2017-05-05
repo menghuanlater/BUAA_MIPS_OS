@@ -1,0 +1,1 @@
+/OSLAB/gxemul -E testmips -d gxemul/fs.img -C R3000 -M 64 gxemul/vmlinux
