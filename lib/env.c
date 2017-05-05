@@ -198,6 +198,7 @@ env_alloc(struct Env **new, u_int parent_id)
 	e->env_parent_id = parent_id;
 	e->env_status = ENV_RUNNABLE;
 	e->env_id = mkenvid(e);
+	//e->env_power = 1;
     /*Step 4: focus on initializing env_tf structure, located at this new Env. 
      * especially the sp register,CPU status. */
     e->env_tf.cp0_status = 0x10001004;

@@ -22,8 +22,15 @@ void mips_init()
 	 * interesting, have fun please*/
 		
 	ENV_CREATE(user_A);
+	//printf("ENV_A create success.\n");
 	ENV_CREATE(user_B);
-	printf("OK,envA and envB create success!\n");
+	ENV_CREATE(user_C);
+	ENV_CREATE(user_D);
+	ENV_CREATE(user_E);
+	ENV_CREATE(user_F);
+	ENV_CREATE(user_G);
+	//创建7个进程
+	//printf("ALL create success!\n");
 	trap_init();
 	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
