@@ -15,22 +15,19 @@
 void sched_yield(void)
 {
 	static long position = -1;
-	static int p_flag = 0;
+	static int a_count = 0;
 	while(1){
-		if(p_flag){
-			p_flag = 0;
-			env_run(&envs[position]);
-			break;
-		}
-		position++;//we must carry this at head,because put it back will cause all env use same position
-		if(position>=2){ //when it over limit range,then we reset it to the array head.
+		position++;
+		if(position>=2)
 			position = 0;
-		}
-		if(envs[position].env_status == ENV_RUNNABLE){
-			if(position==1){
-				p_flag = 1;
+		if(position==0 && envs[position].env_status == ENV_RUNNABLE){
+			if(a_count>=10)
+				continue;
+			else{
+				a_count++;
+				env_run(&envs[position]);
 			}
+		}else if(position==1 && envs[position].env_status == ENV_RUNNABLE)
 			env_run(&envs[position]);
-		}
 	}
 }
