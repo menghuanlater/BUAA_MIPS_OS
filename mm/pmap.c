@@ -19,7 +19,7 @@ static u_long freemem;
 
 static struct Page_list page_free_list;
 
-void count_page()
+/*void count_page()
 {
 	static int callnum = 1;
 	int usenum = 0;
@@ -38,7 +38,7 @@ void count_page()
 	}
 	printf("%d:usenum=%d,allocnum=%d,freenum=%d\n",callnum,usenum,npage-usenum-freenum,freenum);
 	callnum++;
-}
+}*/
 	/* Free list of physical pages */
 
 
