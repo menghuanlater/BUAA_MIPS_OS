@@ -5,7 +5,7 @@
 #include <env.h>
 
 //because now we are in user status,so we need use user/syscall_lib.c but not lib/syscall_all.c
-//be careful.
+//be careful.Ok
 /* ----------------- help functions ---------------- */
 
 /* Overview:
