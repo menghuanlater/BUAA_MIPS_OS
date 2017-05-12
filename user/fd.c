@@ -138,7 +138,8 @@ close_all(void)
 		close(i);
 }
 
-/*复制文件描述符*/
+/*复制文件描述符
+极有可能是文件副本...*/
 int
 dup(int oldfdnum, int newfdnum)
 {
