@@ -1,5 +1,5 @@
 # Common includes in Makefile
-# CC
+# CCC
 # Copyright (C) 2007 Beihang University
 # Written By Zhu Like ( zlike@cse.buaa.edu.cn )
 
