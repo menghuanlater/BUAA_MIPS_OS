@@ -83,6 +83,7 @@ static void
 pgfault(u_int va)
 {
 	u_int temp = 0x50000000;
+	//temp = UTOP-2*BY2PG;
 	//first we must make sure that va is align to BY2PG
 	va = ROUNDDOWN(va,BY2PG);
 	u_int perm = (*vpt)[VPN(va)]& 0xfff;
