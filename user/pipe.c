@@ -137,7 +137,7 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	//writef("address in read:%x\n",&p);
 	while(p->p_rpos>=p->p_wpos){
 		if(_pipeisclosed(fd,p)){
-			writef("no data read,we found the write process exit.\n");
+			writef(" ");
 			return 0;
 		}else{
 			syscall_yield();
@@ -174,7 +174,7 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	//writef("address in write:%x\n",&p);
 	while((p->p_wpos - p->p_rpos)>=BY2PIPE){
 		if(_pipeisclosed(fd,p)){
-			writef("no data write,we found the read process is closed.\n");
+			writef(" ");
 			return 0;
 		}else{
 			syscall_yield();

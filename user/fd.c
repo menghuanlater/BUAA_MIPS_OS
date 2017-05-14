@@ -147,6 +147,7 @@ dup(int oldfdnum, int newfdnum)
 	u_int ova, nva, pte;
 	struct Fd *oldfd, *newfd;
 	//writef("dup comes 1;\n");
+	//close(newfdnum);
 	if ((r = fd_lookup(oldfdnum, &oldfd)) < 0)
 		return r;
 	//may be there will occur env argue.
@@ -156,8 +157,9 @@ dup(int oldfdnum, int newfdnum)
 	ova = fd2data(oldfd);
 	nva = fd2data(newfd);
 
-	if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd, ((*vpt)[VPN(oldfd)])&(PTE_V|PTE_R|PTE_LIBRARY))) < 0)
-		goto err;
+	/*if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd, ((*vpt)[VPN(oldfd)])&(PTE_V|PTE_R|PTE_LIBRARY))) < 0)
+		goto err;*/
+	//close(newfdnum);
 //writef("dup comes 2.5;\n");
 	if ((* vpd)[PDX(ova)]) {
 		for (i=0; i<PDMAP; i+=BY2PG) {
@@ -169,6 +171,9 @@ dup(int oldfdnum, int newfdnum)
 			}
 		}
 	}
+
+	if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd, ((*vpt)[VPN(oldfd)])&(PTE_V|PTE_R|PTE_LIBRARY))) < 0)
+		goto err;
 //writef("dup comes 3;\n");
 	return newfdnum;
 
