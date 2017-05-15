@@ -144,6 +144,7 @@ duppage(u_int envid, u_int pn)
 	// writef("");
 	u_int perm;
 	perm = (*vpt)[pn] & 0xfff; //取出标记位
+	//writef("pn:%d\n",pn);
 	if((((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)) && (perm & PTE_V)){
 		/*if(perm & PTE_LIBRARY){
 			perm = PTE_V | PTE_R | PTE_COW | PTE_LIBRARY;
