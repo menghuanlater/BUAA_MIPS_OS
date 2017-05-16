@@ -453,7 +453,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 		return -E_IPC_NOT_RECV;
 	}
 	if((p=page_lookup(curenv->env_pgdir,srcva,0))<=0){
-		printf("send srcva is not exist.srcva is:%x\n",srcva,srcva);
+		//printf("send srcva is not exist.srcva is:%x\n",srcva,srcva);
 	}else if(page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm)<0){
 		printf("dst pot failed.\n");
 		return -E_INVAL;

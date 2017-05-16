@@ -25,8 +25,8 @@ void mips_init()
 		ENV_CREATE(user_B);
 		printf("OK,envA and envB create success!\n");
 	*/
-	ENV_CREATE(user_fktest);
-	//ENV_CREATE(user_pingpong);
+	//ENV_CREATE(user_fktest);
+	ENV_CREATE(user_pingpong);
 	trap_init();
 	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
