@@ -10,8 +10,6 @@ static int x;
 static int y;
 static int z;
 static int x1;
-static int y1;
-static int z1;
 // Send val to whom.  This function keeps trying until
 // it succeeds.  It should panic() on any error other than
 // -E_IPC_NOT_RECV.
