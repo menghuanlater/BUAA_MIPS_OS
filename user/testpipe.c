@@ -34,12 +34,12 @@ umain(void)
 		writef("[%08x] pipereadeof write %d\n", env->env_id, p[1]);
 		if ((i=write(p[1], msg, strlen(msg))) != strlen(msg))
 			user_panic("write: %e", i);
-		writef("check 3\n");
+		//writef("check 3\n");
 		close(p[1]);
 	}
-	writef("check 1\n");
+	//writef("check 1\n");
 	wait(pid);
-	writef("check 2\n");
+	//writef("check 2\n");
 	if ((i=pipe(p)) < 0)
 		user_panic("pipe: %e", i);
 

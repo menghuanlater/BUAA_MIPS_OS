@@ -202,8 +202,11 @@ read(int fdnum, void *buf, u_int n)
 	}
 	//writef("read() come 3 %x\n",(int)env);
 	r = (*dev->dev_read)(fd, buf, n, fd->fd_offset);
-	if (r >= 0)
+	if (r >= 0){
 		fd->fd_offset += r;
+		char *x = (char *)buf;
+		*(x+r) = '\0';
+	}
 	//writef("read() come 4 %x\n",(int)env);
 	//writef("read() sum read out :%d\n",r);
 	return r;
