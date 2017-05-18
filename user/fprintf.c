@@ -17,7 +17,8 @@ static void user_out2string(void *arg, char *s, int l)
 
 int fwritef(int fd, const char *fmt, ...)
 {
-	char buf[512] = {'\0'};
+	char buf[512];
+	user_bzero(buf,sizeof(buf));
 	va_list ap;
 	va_start(ap, fmt);
 	user_lp_Print(user_out2string, buf, fmt, ap);
