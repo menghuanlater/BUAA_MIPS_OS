@@ -52,7 +52,7 @@ ls1(char *prefix, u_int isdir, u_int size, char *name)
 		fwritef(1, "%s%s", prefix, sep);
 		//writef(" ");
 	}
-	writef("...");
+	///writef("...");
 	fwritef(1, "%s", name);
 	if(flag['F'] && isdir)
 		fwritef(1, "/");
