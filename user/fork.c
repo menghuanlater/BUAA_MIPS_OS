@@ -208,7 +208,7 @@ fork(void)
 	}
 	//we need to set the child env status to ENV_RUNNABLE,we must use syscall_set_env_status.
 	syscall_set_env_status(newenvid,ENV_RUNNABLE);
-	//writef("OK! newenvid is:%d\n",newenvid);
+	writef("OK! newenvid is:%d\n",newenvid);
 	return newenvid;
 }
 

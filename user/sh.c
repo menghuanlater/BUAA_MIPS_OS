@@ -161,7 +161,7 @@ again:
 				dup(p[1],1);
 				close(p[1]);
 				close(p[0]);
-				rightpipe = r;//r是fork返回子进程id
+				//rightpipe = r;//r是fork返回子进程id
 				goto runit;
 			}
 			break;

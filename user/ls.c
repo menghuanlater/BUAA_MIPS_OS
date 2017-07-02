@@ -1,6 +1,6 @@
 #include "lib.h"
 
-int flag[256];
+int flag[256]={0};
 
 void lsdir(char*, char*);
 void ls1(char*, u_int, u_int, char*);
@@ -13,10 +13,14 @@ ls(char *path, char *prefix)
 
 	if ((r=stat(path, &st)) < 0)
 		user_panic("stat %s: %e", path, r);
-	if (st.st_isdir && !flag['d'])
+	if (st.st_isdir && !flag['d']){
+		//writef("now will list information as follows:\n");
 		lsdir(path, prefix);
-	else
+	}
+	else{
+		//writef("now will list information as follows:\n");
 		ls1(0, st.st_isdir, st.st_size, path);
+	}
 }
 
 void
@@ -52,7 +56,7 @@ ls1(char *prefix, u_int isdir, u_int size, char *name)
 		fwritef(1, "%s%s", prefix, sep);
 		//writef(" ");
 	}
-	///writef("...");
+	//writef("****%s\n",name);
 	fwritef(1, "%s", name);
 	if(flag['F'] && isdir)
 		fwritef(1, "/");
