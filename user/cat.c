@@ -1,6 +1,6 @@
 #include "lib.h"
 
-char buf[8192];
+char buf[8192]={'\0'};
 
 void
 cat(int f, char *s)
@@ -18,6 +18,7 @@ cat(int f, char *s)
 void
 umain(int argc, char **argv)
 {
+	user_bzero(buf,8192);
 	int f, i;
 	if(argc == 1){
 		cat(0, "<stdin>");

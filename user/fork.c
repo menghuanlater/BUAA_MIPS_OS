@@ -14,7 +14,7 @@
  * Pre-Condition:
  * 	`src` and `dst` can't be NULL. Also, the `src` area 
  * 	 shouldn't overlap the `dest`, otherwise the behavior of this 
- * 	 function is undefined.
+ * 	 function is undefined.a;
  */
 void user_bcopy(const void *src, void *dst, size_t len)
 {
