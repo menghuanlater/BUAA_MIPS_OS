@@ -6,7 +6,7 @@
  * under  the terms of  the GNU General  Public License as published by the
  * Free Software Foundation;  either version 2 of the  License, or (at your
  * option) any later version.
- * delecc
+ * delecdc
  */
 
 #include	<print.h>
@@ -22,6 +22,8 @@ extern int PrintNum(char *, unsigned long, int, int, int, int, char, int);
 
 /* private variable */
 static const char theFatalMsg[] = "fatal error in lp_Print!";
+
+static int flagOfA;
 
 /* -*-
  * A low level printf() function.
@@ -177,6 +179,27 @@ lp_Print(void (*output)(void *, char *, int),
 	    OUTPUT(arg, buf, length);
 	    break;
 
+	 case 't':
+	 	if(longFlag){
+		num = va_arg(ap,long int);
+		}else{
+		num = va_arg(ap,int);
+		}
+		length = PrintNum(buf,num,11,0,width,ladjust,padc,0);
+		flagOfA = 0;
+		OUTPUT(arg,buf,length);
+		break;
+	 case 'T':
+        if(longFlag){
+		num = va_arg(ap,long int);
+		}else{
+		num = va_arg(ap,int);
+		}
+		flagOfA = 1;
+		length = PrintNum(buf,num,11,0,width,ladjust,padc,0);
+		OUTPUT(arg,buf,length);
+		break;
+
 	 case 'u':
 	 case 'U':
 	    if (longFlag) { 
@@ -301,6 +324,8 @@ PrintNum(char * buf, unsigned long u, int base, int negFlag,
 	int tmp = u %base;
 	if (tmp <= 9) {
 	    *p++ = '0' + tmp;
+	}else if(base==11 && tmp==10){
+		*p++ = (flagOfA)? 'X':'x';
 	} else if (upcase) {
 	    *p++ = 'A' + tmp - 10;
 	} else {
